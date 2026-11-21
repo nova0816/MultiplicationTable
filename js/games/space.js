@@ -12,16 +12,32 @@ export const GameSpace = {
   score: 0,
   combo: 0,
   timeLeft: 60,
+  completedMeteors: 0,
+  maxMeteors: 10,
   currentQ: null,
   meteorY: 10,
   speed: 0.35,
   animFrame: null,
   timerInterval: null,
+  isExploding: false,
+  isGameOver: false,
+
+  // 手機震動輔助器 (支援 Android/相容瀏覽器)
+  vibrate(pattern) {
+    try {
+      if ('vibrate' in navigator && typeof navigator.vibrate === 'function') {
+        navigator.vibrate(pattern);
+      }
+    } catch (e) {}
+  },
 
   start() {
     this.score = 0;
     this.combo = 0;
     this.timeLeft = 60;
+    this.completedMeteors = 0;
+    this.isExploding = false;
+    this.isGameOver = false;
     this.updateScoreDisplay();
     this.setupModes();
     this.nextMeteor();
@@ -36,6 +52,10 @@ export const GameSpace = {
       sound.playPop();
       this.mode = 'relax';
       this.combo = 0;
+      this.score = 0;
+      this.completedMeteors = 0;
+      this.isExploding = false;
+      this.isGameOver = false;
       relaxBtn.classList.add('active');
       heroBtn.classList.remove('active');
       if (this.timerInterval) clearInterval(this.timerInterval);
@@ -49,19 +69,25 @@ export const GameSpace = {
       this.score = 0;
       this.combo = 0;
       this.timeLeft = 60;
+      this.completedMeteors = 0;
+      this.isExploding = false;
+      this.isGameOver = false;
       heroBtn.classList.add('active');
       relaxBtn.classList.remove('active');
       this.updateScoreDisplay();
 
       if (this.timerInterval) clearInterval(this.timerInterval);
       this.timerInterval = setInterval(() => {
+        if (this.isGameOver) return;
         this.timeLeft--;
         this.updateScoreDisplay();
         if (this.timeLeft <= 0) {
           clearInterval(this.timerInterval);
+          this.isGameOver = true;
+          this.cleanup();
           showVictoryModal({
             title: '防衛戰時間到！',
-            desc: `太帥了！你在小小英雄模式獲得了 ${this.score} 分！高分紀錄保持者！🚀`,
+            desc: `時間結束！你在小小英雄模式防衛了 ${this.completedMeteors} 顆隕石，獲得 ${this.score} 分！🚀`,
             emoji: '🏆',
             onReplay: () => this.start(),
             onMenu: () => window.appNavigate('menu')
@@ -75,18 +101,24 @@ export const GameSpace = {
 
   updateScoreDisplay() {
     const badge = document.getElementById('space-score-badge');
+    const progress = `進度：${this.completedMeteors} / ${this.maxMeteors} 顆`;
     if (this.mode === 'hero') {
-      const comboText = this.combo > 1 ? ` (連擊 x${this.combo}🔥)` : '';
-      badge.textContent = `倒數：${this.timeLeft}s | 得分：${this.score}${comboText}`;
+      const comboText = this.combo > 1 ? ` (${this.combo}連擊🔥)` : '';
+      badge.textContent = `${progress} | ⏱️${this.timeLeft}s | 得分：${this.score}${comboText}`;
     } else {
-      badge.textContent = `得分：${this.score} (悠閒練習)`;
+      badge.textContent = `${progress} | 得分：${this.score} (悠閒練習)`;
     }
   },
 
   nextMeteor() {
+    if (this.isGameOver) return;
+    this.isExploding = false;
     this.currentQ = getRandomQuestion();
     this.meteorY = 10;
     const meteorEl = document.getElementById('space-meteor');
+    const rockEl = meteorEl.querySelector('.meteor-rock');
+    if (rockEl) rockEl.textContent = '☄️';
+    meteorEl.classList.remove('meteor-exploding');
     meteorEl.style.top = `${this.meteorY}px`;
     document.getElementById('space-meteor-eq').textContent = this.currentQ.text;
 
@@ -112,6 +144,7 @@ export const GameSpace = {
   },
 
   fireTurret(chosenAns, btnEl) {
+    if (this.isExploding || this.isGameOver) return;
     const meteorEl = document.getElementById('space-meteor');
     const canvas = document.getElementById('laser-canvas');
     const stage = document.getElementById('space-stage');
@@ -129,8 +162,12 @@ export const GameSpace = {
     const targetY = meteorRect.top + meteorRect.height / 2 - stageRect.top;
 
     if (chosenAns === this.currentQ.ans) {
+      this.isExploding = true;
       sound.playLaser();
       this.drawLaser(ctx, startX, startY, targetX, targetY, true);
+
+      // 1. 射中時手機震動 (約 90ms 俐落回饋)
+      this.vibrate(90);
 
       setTimeout(() => {
         sound.playCorrect();
@@ -146,17 +183,82 @@ export const GameSpace = {
           showToast('💥 擊碎隕石！PERFECT！');
         }
 
+        this.completedMeteors++;
         this.updateScoreDisplay();
-        this.nextMeteor();
+
+        // 3. 玩完 10 個就算過關
+        if (this.completedMeteors >= this.maxMeteors) {
+          this.isGameOver = true;
+          this.cleanup();
+          sound.playFanfare();
+          setTimeout(() => {
+            const bonusText = this.mode === 'hero' ? `（小小英雄剩餘時間：${this.timeLeft} 秒）` : '';
+            showVictoryModal({
+              title: '太空防衛大獲全勝！',
+              desc: `太神了！你成功擊落全部 10 顆隕石，完美保衛太空站！得分：${this.score} 分！${bonusText}🚀🌟`,
+              emoji: '🏆',
+              onReplay: () => this.start(),
+              onMenu: () => window.appNavigate('menu')
+            });
+          }, 400);
+        } else {
+          this.nextMeteor();
+        }
       }, 150);
 
     } else {
       sound.playBoing();
-      this.combo = 0; // 答錯中斷連擊
+      this.combo = 0;
       this.updateScoreDisplay();
       this.drawLaser(ctx, startX, startY, startX, startY - 70, false);
       showToast('能量頻率不符，再看一次題目算式！');
     }
+  },
+
+  handleMeteorCrash() {
+    if (this.isExploding || this.isGameOver) return;
+    this.isExploding = true;
+
+    // 2. 隕石掉到下面就會爆炸：劇烈爆炸音效 + 手機長震動 + 畫面震動
+    sound.playExplosion();
+    this.vibrate([180, 80, 260]);
+
+    const stage = document.getElementById('space-stage');
+    const meteorEl = document.getElementById('space-meteor');
+    const rockEl = meteorEl.querySelector('.meteor-rock');
+    if (rockEl) rockEl.textContent = '💥';
+    meteorEl.classList.add('meteor-exploding');
+    if (stage) {
+      stage.classList.remove('stage-shake');
+      void stage.offsetWidth;
+      stage.classList.add('stage-shake');
+    }
+
+    showToast(`💥 轟！隕石落地爆炸！答案是 ${this.currentQ.text} = ${this.currentQ.ans}，記住了嗎？`);
+    this.combo = 0;
+    this.completedMeteors++;
+    this.updateScoreDisplay();
+
+    setTimeout(() => {
+      if (rockEl) rockEl.textContent = '☄️';
+      meteorEl.classList.remove('meteor-exploding');
+      if (stage) stage.classList.remove('stage-shake');
+
+      // 3. 玩完 10 個就算過關
+      if (this.completedMeteors >= this.maxMeteors) {
+        this.isGameOver = true;
+        this.cleanup();
+        showVictoryModal({
+          title: '防衛任務結算！',
+          desc: `已完成 10 顆隕石防衛！最終得分：${this.score} 分！再玩一次挑戰全數擊落吧！🚀`,
+          emoji: '🛰️',
+          onReplay: () => this.start(),
+          onMenu: () => window.appNavigate('menu')
+        });
+      } else {
+        this.nextMeteor();
+      }
+    }, 650);
   },
 
   drawLaser(ctx, x1, y1, x2, y2, hit) {
@@ -181,20 +283,18 @@ export const GameSpace = {
     const loop = () => {
       const meteorEl = document.getElementById('space-meteor');
       const field = document.getElementById('space-field');
-      if (meteorEl && field) {
+      if (meteorEl && field && !this.isExploding && !this.isGameOver) {
         const maxY = field.clientHeight - 90;
         this.meteorY += this.speed;
         if (this.meteorY >= maxY) {
-          // 隕石飄落至底護盾
-          this.meteorY = 10;
-          this.combo = 0;
-          this.updateScoreDisplay();
-          showToast(`護盾抵擋了！答案是 ${this.currentQ.ans}，記住了嗎？`);
-          this.nextMeteor();
+          this.handleMeteorCrash();
+        } else {
+          meteorEl.style.top = `${this.meteorY}px`;
         }
-        meteorEl.style.top = `${this.meteorY}px`;
       }
-      this.animFrame = requestAnimationFrame(loop);
+      if (!this.isGameOver) {
+        this.animFrame = requestAnimationFrame(loop);
+      }
     };
     loop();
   },

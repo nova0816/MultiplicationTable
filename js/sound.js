@@ -130,6 +130,49 @@ class SoundEngine {
     osc.stop(now + 0.15);
   }
 
+  // 隕石落地劇烈爆炸音效 (重低音 Thump + 低頻白噪音轟鳴)
+  playExplosion() {
+    if (!state.soundEnabled) return;
+    this.init();
+    if (!this.ctx) return;
+    const now = this.ctx.currentTime;
+
+    // 1. 低頻重低音 Thump (150Hz -> 35Hz)
+    const osc = this.ctx.createOscillator();
+    const oscGain = this.ctx.createGain();
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(150, now);
+    osc.frequency.exponentialRampToValueAtTime(35, now + 0.45);
+    oscGain.gain.setValueAtTime(0.4, now);
+    oscGain.gain.exponentialRampToValueAtTime(0.001, now + 0.48);
+    osc.connect(oscGain);
+    oscGain.connect(this.ctx.destination);
+    osc.start(now);
+    osc.stop(now + 0.5);
+
+    // 2. 劇烈爆炸白噪音 (Noise 經低通濾波從 800Hz 衰減至 50Hz 轟鳴)
+    const bufferSize = this.ctx.sampleRate * 0.6;
+    const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+
+    const noise = this.ctx.createBufferSource();
+    noise.buffer = buffer;
+    const filter = this.ctx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(800, now);
+    filter.frequency.exponentialRampToValueAtTime(50, now + 0.55);
+
+    const noiseGain = this.ctx.createGain();
+    noiseGain.gain.setValueAtTime(0.45, now);
+    noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.58);
+
+    noise.connect(filter);
+    filter.connect(noiseGain);
+    noiseGain.connect(this.ctx.destination);
+    noise.start(now);
+  }
+
   // 振奮高昂的怪獸餵食答對歡慶音效 (清脆大三和弦勝利琶音 + 閃亮鈴聲泛音 + 歡樂共鳴 + 可愛飽嗝)
   playMonsterSuccess() {
     if (!state.soundEnabled) return;
