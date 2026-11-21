@@ -11,13 +11,15 @@ import { GameFrog } from './games/frog.js';
 import { GamePotion } from './games/potion.js';
 import { GameSpace } from './games/space.js';
 import { GameCards } from './games/cards.js';
+import { GamePuzzle } from './games/puzzle.js';
 
 const gamesMap = {
   monster: GameMonster,
   frog: GameFrog,
   potion: GamePotion,
   space: GameSpace,
-  cards: GameCards
+  cards: GameCards,
+  puzzle: GamePuzzle
 };
 
 let activeGame = null;

@@ -274,6 +274,7 @@ header {
 .game-card[data-game="potion"] { border-color: #C084FC; background: linear-gradient(135deg, #FAF5FF 0%, #FFFFFF 100%); }
 .game-card[data-game="space"] { border-color: #60A5FA; background: linear-gradient(135deg, #EFF6FF 0%, #FFFFFF 100%); }
 .game-card[data-game="cards"] { border-color: #FBBF24; background: linear-gradient(135deg, #FFFBEB 0%, #FFFFFF 100%); }
+.game-card[data-game="puzzle"] { border-color: #14B8A6; background: linear-gradient(135deg, #F0FDFA 0%, #FFFFFF 100%); }
 
 .game-card-icon {
   width: 76px;
@@ -305,6 +306,7 @@ header {
 .game-card[data-game="potion"] .game-card-tag { background: #F3E8FF; color: #9333EA; }
 .game-card[data-game="space"] .game-card-tag { background: #DBEAFE; color: #2563EB; }
 .game-card[data-game="cards"] .game-card-tag { background: #FEF3C7; color: #D97706; }
+.game-card[data-game="puzzle"] .game-card-tag { background: #CCFBF1; color: #0D9488; }
 
 .game-card-info p {
   font-size: 0.9rem;

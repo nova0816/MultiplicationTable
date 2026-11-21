@@ -318,6 +318,7 @@
     .game-card[data-game="potion"] { border-color: #C084FC; background: linear-gradient(135deg, #FAF5FF 0%, #FFFFFF 100%); }
     .game-card[data-game="space"] { border-color: #60A5FA; background: linear-gradient(135deg, #EFF6FF 0%, #FFFFFF 100%); }
     .game-card[data-game="cards"] { border-color: #FBBF24; background: linear-gradient(135deg, #FFFBEB 0%, #FFFFFF 100%); }
+    .game-card[data-game="puzzle"] { border-color: #14B8A6; background: linear-gradient(135deg, #F0FDFA 0%, #FFFFFF 100%); }
 
     .game-card-icon {
       width: 76px;
@@ -349,6 +350,7 @@
     .game-card[data-game="potion"] .game-card-tag { background: #F3E8FF; color: #9333EA; }
     .game-card[data-game="space"] .game-card-tag { background: #DBEAFE; color: #2563EB; }
     .game-card[data-game="cards"] .game-card-tag { background: #FEF3C7; color: #D97706; }
+    .game-card[data-game="puzzle"] .game-card-tag { background: #CCFBF1; color: #0D9488; }
 
     .game-card-info p {
       font-size: 0.92rem;
@@ -1216,6 +1218,183 @@
       text-align: center;
       padding: 4px;
     }
+
+    /* 遊戲 6: 乘法方塊大挪移 */
+    #puzzle-stage {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 14px;
+      background: radial-gradient(circle at center, #F0FDFA 0%, #CCFBF1 55%, #99F6E4 100%);
+      border-radius: 0 0 24px 24px;
+      overflow-y: auto;
+    }
+    .puzzle-header-hint {
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: #0F766E;
+      background: rgba(255, 255, 255, 0.9);
+      padding: 6px 18px;
+      border-radius: 20px;
+      box-shadow: 0 2px 8px rgba(15, 118, 110, 0.12);
+      margin-bottom: 6px;
+      text-align: center;
+    }
+    .puzzle-tier-tag {
+      background: #CCFBF1;
+      color: #0D9488;
+      font-weight: 800;
+      padding: 4px 10px;
+      border-radius: 10px;
+      font-size: 0.85rem;
+    }
+    .puzzle-level-text {
+      font-weight: 800;
+      color: #0F766E;
+      font-size: 0.88rem;
+    }
+    .puzzle-rows-container {
+      width: 100%;
+      max-width: 480px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin: auto 0;
+      padding: 4px 0;
+    }
+    .puzzle-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      background: rgba(255, 255, 255, 0.94);
+      border: 3px solid #CBD5E1;
+      border-radius: 20px;
+      padding: 8px 12px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+      transition: all 0.3s;
+      position: relative;
+    }
+    .puzzle-row.row-correct {
+      border-color: #10B981;
+      background: #ECFDF5;
+    }
+    .puzzle-row.row-wrong {
+      border-color: #EF4444;
+      background: #FEF2F2;
+      animation: rowWobble 0.45s ease-in-out;
+    }
+    @keyframes rowWobble {
+      0%, 100% { transform: translateX(0); }
+      20% { transform: translateX(-8px); }
+      40% { transform: translateX(8px); }
+      60% { transform: translateX(-5px); }
+      80% { transform: translateX(5px); }
+    }
+    .puzzle-block {
+      width: 58px;
+      height: 58px;
+      background: linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%);
+      border: 3px solid #F59E0B;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.85rem;
+      font-weight: 900;
+      color: #B45309;
+      box-shadow: 0 4px 0 #D97706, 0 6px 10px rgba(217, 119, 6, 0.15);
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .puzzle-block:active {
+      transform: translateY(2px);
+      box-shadow: 0 1px 0 #D97706;
+    }
+    .puzzle-block.selected {
+      background: linear-gradient(135deg, #FEF08A 0%, #FBBF24 100%);
+      border-color: #D97706;
+      box-shadow: 0 0 0 4px #FDE047, 0 6px 14px rgba(217, 119, 6, 0.45);
+      transform: scale(1.12) translateY(-4px);
+      z-index: 5;
+    }
+    .puzzle-op, .puzzle-eq {
+      font-size: 1.6rem;
+      font-weight: 900;
+      color: #64748B;
+      user-select: none;
+    }
+    .puzzle-target {
+      min-width: 66px;
+      height: 58px;
+      padding: 0 12px;
+      background: #F0F9FF;
+      border: 3px solid #0284C7;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.85rem;
+      font-weight: 900;
+      color: #0369A1;
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.06);
+      user-select: none;
+    }
+    .puzzle-status-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      font-weight: 900;
+      visibility: hidden;
+      flex-shrink: 0;
+    }
+    .puzzle-row.row-correct .puzzle-status-icon {
+      visibility: visible;
+      background: #10B981;
+      color: white;
+    }
+    .puzzle-row.row-wrong .puzzle-status-icon {
+      visibility: visible;
+      background: #EF4444;
+      color: white;
+    }
+    .puzzle-controls-bottom {
+      width: 100%;
+      max-width: 320px;
+      margin-top: 10px;
+    }
+    .puzzle-check-btn {
+      width: 100%;
+      padding: 13px 24px;
+      font-size: 1.25rem;
+      border-radius: 20px;
+      background: linear-gradient(135deg, #059669 0%, #10B981 100%);
+      box-shadow: 0 6px 0 #047857, 0 10px 18px rgba(5, 150, 105, 0.35);
+      border: none;
+      color: white;
+      font-weight: 900;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .puzzle-check-btn:active {
+      transform: translateY(3px);
+      box-shadow: 0 2px 0 #047857;
+    }
+    @media (max-width: 500px) {
+      .puzzle-rows-container { gap: 6px; }
+      .puzzle-row { gap: 6px; padding: 6px 8px; border-radius: 16px; }
+      .puzzle-block { width: 48px; height: 48px; font-size: 1.5rem; border-radius: 12px; }
+      .puzzle-target { min-width: 54px; height: 48px; font-size: 1.5rem; border-radius: 12px; padding: 0 8px; }
+      .puzzle-op, .puzzle-eq { font-size: 1.35rem; }
+      .puzzle-status-icon { width: 22px; height: 22px; font-size: 0.95rem; }
+    }
   </style>
 </head>
 <body>
@@ -1307,6 +1486,16 @@
             <span class="game-card-tag">記憶對決型</span>
             <h3>5. 親子翻翻樂對決</h3>
             <p>算式與答案卡牌翻翻配對，支援單人練習或爸爸媽媽雙人對戰！</p>
+          </div>
+        </div>
+
+        <!-- 遊戲 6 -->
+        <div class="game-card" data-game="puzzle" id="card-puzzle">
+          <div class="game-card-icon">🧩</div>
+          <div class="game-card-info">
+            <span class="game-card-tag">算式拼圖解謎型</span>
+            <h3>6. 乘法方塊大挪移</h3>
+            <p>方塊兩兩互換，解開所有乘法等式！從 2 排晉級到 5 排大破關！</p>
           </div>
         </div>
       </div>
@@ -1495,6 +1684,33 @@
             </div>
           </div>
           <div class="card-grid-board" id="card-board-grid"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== 7. 遊戲 6: 乘法方塊大挪移 ===================== -->
+    <section id="view-puzzle" class="view-section">
+      <div class="game-stage-wrapper">
+        <div class="game-top-bar">
+          <div class="game-title-badge">🧩 乘法方塊大挪移</div>
+          <div class="space-mode-bar">
+            <span class="puzzle-tier-tag" id="puzzle-tier-badge">初級：2 排算式</span>
+            <span class="puzzle-level-text" id="puzzle-level-badge">第 1 / 12 關</span>
+          </div>
+          <button class="mini-btn" id="btn-puzzle-reset">重新打亂</button>
+        </div>
+        <div id="puzzle-stage">
+          <div class="puzzle-header-hint" id="puzzle-hint-text">
+            💡 點選任兩個方塊可以互換位置，完成後按「確定檢查」！
+          </div>
+          <div class="puzzle-rows-container" id="puzzle-board">
+            <!-- 動態渲染各排算式 -->
+          </div>
+          <div class="puzzle-controls-bottom">
+            <button class="puzzle-check-btn" id="btn-puzzle-check">
+              <span>✅ 確定檢查</span>
+            </button>
+          </div>
         </div>
       </div>
     </section>
@@ -1962,6 +2178,7 @@
         else if (viewName === 'potion') { activeGame = GamePotion; GamePotion.start(); }
         else if (viewName === 'space') { activeGame = GameSpace; GameSpace.start(); }
         else if (viewName === 'cards') { activeGame = GameCards; GameCards.start(); }
+        else if (viewName === 'puzzle') { activeGame = GamePuzzle; GamePuzzle.start(); }
       }
     }
 
@@ -2906,7 +3123,287 @@
     };
 
     // ------------------------------------------------------------------------
-    // 11. 初始化與事件綁定
+    // 11. 遊戲 6: 乘法方塊大挪移 (Equation Puzzle Swap)
+    // ------------------------------------------------------------------------
+    const GamePuzzle = {
+      currentLevel: 1,
+      totalLevels: 12,
+      rowsCount: 2,
+      equations: [],
+      blocks: [], // array of [valA, valB]
+      selectedBlock: null,
+
+      start() {
+        this.currentLevel = 1;
+        this.setupControls();
+        this.loadLevel(this.currentLevel);
+      },
+
+      setupControls() {
+        const resetBtn = document.getElementById('btn-puzzle-reset');
+        const checkBtn = document.getElementById('btn-puzzle-check');
+
+        if (resetBtn) {
+          resetBtn.onclick = () => {
+            sound.playPop();
+            this.shuffleCurrentBlocks();
+            this.renderBoard();
+            showToast('方塊已重新打亂！');
+          };
+        }
+
+        if (checkBtn) {
+          checkBtn.onclick = () => {
+            this.checkAnswer();
+          };
+        }
+      },
+
+      getRowsForLevel(lvl) {
+        // 第 1 ~ 3 關: 2 排
+        // 第 4 ~ 6 關: 3 排
+        // 第 7 ~ 9 關: 4 排
+        // 第 10 ~ 12 關: 5 排
+        return Math.min(5, Math.floor((lvl - 1) / 3) + 2);
+      },
+
+      getTierName(rows) {
+        if (rows === 2) return '初級：2 排算式';
+        if (rows === 3) return '進階：3 排算式';
+        if (rows === 4) return '挑戰：4 排算式';
+        return '大師：5 排算式';
+      },
+
+      loadLevel(lvl) {
+        this.currentLevel = lvl;
+        this.rowsCount = this.getRowsForLevel(lvl);
+        this.selectedBlock = null;
+
+        const tierBadge = document.getElementById('puzzle-tier-badge');
+        const levelBadge = document.getElementById('puzzle-level-badge');
+        if (tierBadge) tierBadge.textContent = this.getTierName(this.rowsCount);
+        if (levelBadge) levelBadge.textContent = `第 ${this.currentLevel} / ${this.totalLevels} 關`;
+
+        this.generateEquations();
+        this.shuffleCurrentBlocks();
+        this.renderBoard();
+      },
+
+      generateEquations() {
+        const pool = state.selectedNumbers.length > 0 ? state.selectedNumbers : [2, 3, 5];
+        this.equations = [];
+        const usedTargets = new Set();
+        let attempts = 0;
+
+        while (this.equations.length < this.rowsCount && attempts < 200) {
+          attempts++;
+          let a = pool[Math.floor(Math.random() * pool.length)];
+          let b = Math.floor(Math.random() * 9) + 1;
+
+          if ((b === 2 || a === 2) && state.selectedNumbers.includes(2)) {
+            a = 2;
+          }
+
+          const target = a * b;
+          if (!usedTargets.has(target)) {
+            usedTargets.add(target);
+            this.equations.push({
+              target: target,
+              solA: a,
+              solB: b
+            });
+          }
+        }
+
+        while (this.equations.length < this.rowsCount) {
+          const a = pool[Math.floor(Math.random() * pool.length)];
+          const b = Math.floor(Math.random() * 9) + 1;
+          this.equations.push({
+            target: a * b,
+            solA: a,
+            solB: b
+          });
+        }
+      },
+
+      shuffleCurrentBlocks() {
+        const numbers = [];
+        this.equations.forEach(eq => {
+          numbers.push(eq.solA, eq.solB);
+        });
+
+        let isAllCorrect = true;
+        let shuffleAttempts = 0;
+
+        while (isAllCorrect && shuffleAttempts < 50) {
+          shuffleAttempts++;
+          for (let i = numbers.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [numbers[i], numbers[j]] = [numbers[j], numbers[i]];
+          }
+
+          isAllCorrect = this.equations.every((eq, idx) => {
+            const nA = numbers[idx * 2];
+            const nB = numbers[idx * 2 + 1];
+            return (nA * nB === eq.target);
+          });
+        }
+
+        this.blocks = [];
+        for (let r = 0; r < this.rowsCount; r++) {
+          this.blocks.push([
+            numbers[r * 2],
+            numbers[r * 2 + 1]
+          ]);
+        }
+      },
+
+      renderBoard() {
+        const board = document.getElementById('puzzle-board');
+        if (!board) return;
+        board.innerHTML = '';
+
+        this.equations.forEach((eq, r) => {
+          const rowEl = document.createElement('div');
+          rowEl.className = 'puzzle-row';
+          rowEl.dataset.row = r;
+          rowEl.id = `puzzle-row-${r}`;
+
+          const valA = this.blocks[r][0];
+          const valB = this.blocks[r][1];
+
+          rowEl.innerHTML = `
+            <div class="puzzle-block" data-row="${r}" data-col="0" id="pblock-${r}-0">${valA}</div>
+            <div class="puzzle-op">×</div>
+            <div class="puzzle-block" data-row="${r}" data-col="1" id="pblock-${r}-1">${valB}</div>
+            <div class="puzzle-eq">=</div>
+            <div class="puzzle-target">${eq.target}</div>
+            <div class="puzzle-status-icon" id="pstatus-${r}"></div>
+          `;
+
+          const blockA = rowEl.querySelector(`#pblock-${r}-0`);
+          const blockB = rowEl.querySelector(`#pblock-${r}-1`);
+          blockA.addEventListener('click', () => this.handleBlockClick(r, 0, blockA));
+          blockB.addEventListener('click', () => this.handleBlockClick(r, 1, blockB));
+
+          board.appendChild(rowEl);
+        });
+      },
+
+      handleBlockClick(row, col, blockEl) {
+        sound.playPop();
+
+        document.querySelectorAll('.puzzle-row').forEach(r => {
+          r.classList.remove('row-wrong');
+        });
+
+        if (!this.selectedBlock) {
+          this.selectedBlock = { row, col, el: blockEl };
+          blockEl.classList.add('selected');
+          return;
+        }
+
+        if (this.selectedBlock.row === row && this.selectedBlock.col === col) {
+          blockEl.classList.remove('selected');
+          this.selectedBlock = null;
+          return;
+        }
+
+        const prev = this.selectedBlock;
+        prev.el.classList.remove('selected');
+
+        const val1 = this.blocks[prev.row][prev.col];
+        const val2 = this.blocks[row][col];
+
+        this.blocks[prev.row][prev.col] = val2;
+        this.blocks[row][col] = val1;
+
+        prev.el.textContent = val2;
+        blockEl.textContent = val1;
+
+        prev.el.style.transform = 'scale(1.15)';
+        blockEl.style.transform = 'scale(1.15)';
+        setTimeout(() => {
+          prev.el.style.transform = '';
+          blockEl.style.transform = '';
+        }, 180);
+
+        this.selectedBlock = null;
+      },
+
+      checkAnswer() {
+        let allCorrect = true;
+        let correctCount = 0;
+
+        this.equations.forEach((eq, r) => {
+          const valA = this.blocks[r][0];
+          const valB = this.blocks[r][1];
+          const isRowCorrect = (valA * valB === eq.target);
+
+          const rowEl = document.getElementById(`puzzle-row-${r}`);
+          const statusIcon = document.getElementById(`pstatus-${r}`);
+
+          if (rowEl && statusIcon) {
+            rowEl.classList.remove('row-correct', 'row-wrong');
+            void rowEl.offsetWidth;
+
+            if (isRowCorrect) {
+              rowEl.classList.add('row-correct');
+              statusIcon.textContent = '✓';
+              correctCount++;
+            } else {
+              rowEl.classList.add('row-wrong');
+              statusIcon.textContent = '✗';
+              allCorrect = false;
+            }
+          }
+        });
+
+        if (allCorrect) {
+          sound.playMonsterSuccess();
+          Confetti.burst(50);
+          showToast('🎉 太棒了！全部算式配對正確！');
+
+          if (this.currentLevel >= this.totalLevels) {
+            setTimeout(() => {
+              showVictoryModal(
+                '大破關！全能乘法大師！',
+                '恭喜你通關了全部 12 道方塊大挪移挑戰，連五排算式也難不倒你！太厲害了！🏆✨',
+                '🧩',
+                () => this.start()
+              );
+            }, 600);
+          } else {
+            const nextLvl = this.currentLevel + 1;
+            const nextRows = this.getRowsForLevel(nextLvl);
+            if (nextRows > this.rowsCount) {
+              setTimeout(() => {
+                showToast(`🚀 晉級！接下來挑戰更厲害的 ${nextRows} 排算式！`);
+              }, 400);
+            }
+            setTimeout(() => {
+              this.loadLevel(nextLvl);
+            }, 1200);
+          }
+        } else {
+          sound.playBoing();
+          try {
+            if ('vibrate' in navigator && typeof navigator.vibrate === 'function') {
+              navigator.vibrate(80);
+            }
+          } catch (e) {}
+
+          showToast(`還有 ${this.rowsCount - correctCount} 排算式不對喔，再調換方塊試試看！💪`);
+        }
+      },
+
+      cleanup() {
+        this.selectedBlock = null;
+      }
+    };
+
+    // ------------------------------------------------------------------------
+    // 12. 初始化與事件綁定
     // ------------------------------------------------------------------------
     window.addEventListener('DOMContentLoaded', () => {
       Confetti.init();
@@ -2943,13 +3440,14 @@
         renderNumberSelector();
       });
 
-      // 5 大遊戲卡片點擊監聽 (點擊任何卡片立即進入遊戲)
+      // 6 大遊戲卡片點擊監聽 (點擊任何卡片立即進入遊戲)
       const gameCards = [
         { id: 'card-monster', view: 'monster' },
         { id: 'card-frog', view: 'frog' },
         { id: 'card-potion', view: 'potion' },
         { id: 'card-space', view: 'space' },
-        { id: 'card-cards', view: 'cards' }
+        { id: 'card-cards', view: 'cards' },
+        { id: 'card-puzzle', view: 'puzzle' }
       ];
 
       gameCards.forEach(item => {
