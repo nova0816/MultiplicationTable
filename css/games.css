@@ -1,0 +1,710 @@
+/* ==========================================================================
+   九九乘法大冒險 - 5 大遊戲專用樣式 (Games Styles)
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   GAME 1: 貪吃怪獸餵食秀 (Monster Feeding)
+   -------------------------------------------------------------------------- */
+#monster-stage {
+  flex: 1;
+  background: radial-gradient(circle at center, #FDF4FF 0%, #FAE8FF 60%, #F5D0FE 100%);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px 28px;
+  overflow: hidden;
+  min-height: 480px;
+}
+
+/* 上方食物漂浮架 */
+.food-spawn-shelf {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  gap: 22px;
+  padding: 8px 0;
+  z-index: 30;
+  min-height: 96px;
+}
+
+.food-item {
+  width: 86px;
+  height: 86px;
+  border-radius: 22px;
+  background: white;
+  box-shadow: 0 8px 18px rgba(168, 85, 247, 0.22);
+  border: 3px solid #F472B6;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  position: relative;
+}
+.food-item:active {
+  cursor: grabbing;
+  transform: scale(1.12);
+  box-shadow: 0 12px 26px rgba(168, 85, 247, 0.38);
+}
+.food-item.dragging {
+  position: fixed;
+  pointer-events: none;
+  z-index: 9999;
+  transform: scale(1.18) translate(-50%, -50%);
+  transition: none;
+}
+.food-icon {
+  font-size: 2.1rem;
+  line-height: 1;
+  pointer-events: none;
+}
+.food-val {
+  font-size: 1.3rem;
+  font-weight: 900;
+  color: #9D174D;
+  pointer-events: none;
+}
+
+/* 怪獸與頭頂算式氣泡 */
+.monster-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  margin-top: 6px;
+}
+
+.monster-speech-bubble {
+  background: white;
+  border: 4px solid #F472B6;
+  border-radius: 26px;
+  padding: 10px 24px;
+  font-size: 1.65rem;
+  font-weight: 900;
+  color: #9D174D;
+  box-shadow: 0 6px 16px rgba(244, 114, 182, 0.25);
+  position: relative;
+  margin-bottom: 12px;
+  animation: floatBubble 2.5s ease-in-out infinite alternate;
+}
+.monster-speech-bubble::after {
+  content: '';
+  position: absolute;
+  bottom: -14px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 14px 12px 0;
+  border-style: solid;
+  border-color: #F472B6 transparent;
+  display: block;
+  width: 0;
+}
+@keyframes floatBubble {
+  from { transform: translateY(0); }
+  to { transform: translateY(-7px); }
+}
+
+.monster-svg-box {
+  width: 190px;
+  height: 190px;
+  position: relative;
+  transition: transform 0.3s;
+}
+.monster-mouth-target {
+  position: absolute;
+  width: 110px;
+  height: 80px;
+  top: 90px;
+  left: 40px;
+  border-radius: 50%;
+  z-index: 10;
+}
+
+/* 飽足感進度條 */
+.satiety-bar-wrap {
+  width: 82%;
+  max-width: 340px;
+  background: white;
+  border: 3px solid #F472B6;
+  border-radius: 22px;
+  padding: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.satiety-fill {
+  height: 20px;
+  background: linear-gradient(90deg, #F472B6, #EC4899);
+  border-radius: 14px;
+  width: 0%;
+  transition: width 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.satiety-text {
+  font-size: 0.9rem;
+  font-weight: 900;
+  color: #BE185D;
+  white-space: nowrap;
+  padding-right: 8px;
+}
+
+
+/* --------------------------------------------------------------------------
+   GAME 2: 叢林跳跳蛙 (Jungle Frog Jump)
+   -------------------------------------------------------------------------- */
+#frog-stage {
+  flex: 1;
+  background: linear-gradient(180deg, #86EFAC 0%, #34D399 22%, #38BDF8 55%, #0284C7 100%);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px 20px;
+  overflow: hidden;
+  min-height: 520px;
+}
+.river-scene {
+  width: 100%;
+  flex: 1;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.treasure-island {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  background: rgba(254, 240, 138, 0.45);
+  backdrop-filter: blur(4px);
+  padding: 10px 16px;
+  border-radius: 22px;
+  z-index: 10;
+}
+.treasure-box-icon {
+  font-size: 2.8rem;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+  animation: wiggle 2s infinite ease-in-out;
+}
+@keyframes wiggle {
+  0%, 100% { transform: rotate(-4deg); }
+  50% { transform: rotate(4deg); }
+}
+
+.frog-question-banner {
+  background: white;
+  border: 4px solid #10B981;
+  border-radius: 20px;
+  padding: 8px 26px;
+  font-size: 1.85rem;
+  font-weight: 900;
+  color: #065F46;
+  box-shadow: 0 6px 15px rgba(5, 150, 105, 0.28);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* 中間河道區：荷葉漂浮在河中中央，完全獨立，絕不遮擋任何數字 */
+.river-stream-area {
+  width: 100%;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  z-index: 20;
+  margin: 15px 0 10px;
+}
+.lilypads-container {
+  width: 100%;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 0 10px;
+}
+.lilypad-btn {
+  width: 110px;
+  height: 98px;
+  background: radial-gradient(circle, #4ADE80 30%, #16A34A 100%);
+  border: 4px solid #15803D;
+  border-radius: 50% 50% 45% 45% / 55% 55% 40% 40%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: white;
+  font-size: 1.9rem;
+  font-weight: 900;
+  box-shadow: 0 8px 20px rgba(22, 163, 74, 0.45);
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  position: relative;
+  animation: floatLily 3s ease-in-out infinite alternate;
+}
+.lilypad-btn:nth-child(2) {
+  animation-delay: 0.5s;
+}
+.lilypad-btn:nth-child(3) {
+  animation-delay: 1s;
+}
+@keyframes floatLily {
+  from { transform: translateY(0); }
+  to { transform: translateY(-8px); }
+}
+.lilypad-btn::before {
+  content: '🌸';
+  position: absolute;
+  top: -8px;
+  right: -4px;
+  font-size: 1.3rem;
+}
+.lilypad-btn:hover {
+  transform: scale(1.08) translateY(-4px);
+}
+.lilypad-btn:active {
+  transform: scale(0.92);
+}
+.lilypad-btn.sink {
+  animation: sinkPad 0.7s forwards ease;
+}
+@keyframes sinkPad {
+  0% { transform: translateY(0) scale(1); opacity: 1; }
+  50% { transform: translateY(35px) scale(0.7); opacity: 0.35; }
+  100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+/* 底部河岸起跳區：青蛙站在起跳點，與荷葉保持寬裕距離 */
+.frog-start-bank {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  position: relative;
+  min-height: 105px;
+  z-index: 25;
+}
+.start-dock-leaf {
+  width: 160px;
+  height: 42px;
+  background: radial-gradient(ellipse at center, #15803D 0%, #14532D 100%);
+  border: 3px solid #166534;
+  border-radius: 999px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  bottom: 6px;
+}
+.start-dock-label {
+  font-size: 0.85rem;
+  font-weight: 900;
+  color: #BBF7D0;
+  letter-spacing: 2px;
+}
+.frog-actor {
+  width: 90px;
+  height: 90px;
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  transition: all 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+  z-index: 30;
+  pointer-events: none;
+}
+.frog-actor.jumping {
+  transition: all 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.rainbow-banner {
+  position: absolute;
+  top: 15px;
+  background: linear-gradient(90deg, #F43F5E, #F59E0B, #10B981, #06B6D4, #8B5CF6);
+  color: white;
+  font-weight: 900;
+  font-size: 1.05rem;
+  padding: 6px 18px;
+  border-radius: 20px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+  display: none;
+  animation: pulseRainbow 0.9s infinite alternate;
+  z-index: 50;
+}
+@keyframes pulseRainbow {
+  from { transform: scale(0.96); }
+  to { transform: scale(1.04); }
+}
+
+
+/* --------------------------------------------------------------------------
+   GAME 3: 魔法藥水調配師 (Magic Potion)
+   -------------------------------------------------------------------------- */
+#potion-stage {
+  flex: 1;
+  background: radial-gradient(circle at center, #2E1065 0%, #1E1B4B 60%, #0F172A 100%);
+  color: white;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px 24px;
+  overflow: hidden;
+  min-height: 500px;
+}
+
+.wizard-customer-box {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(10px);
+  padding: 12px 20px;
+  border-radius: 24px;
+  border: 2px solid rgba(255, 255, 255, 0.22);
+}
+.customer-avatar {
+  font-size: 3.2rem;
+  filter: drop-shadow(0 0 12px #A855F7);
+}
+.customer-bubble {
+  flex: 1;
+  font-size: 1.15rem;
+  font-weight: 700;
+  line-height: 1.4;
+}
+.target-energy-badge {
+  background: #F59E0B;
+  color: #78350F;
+  padding: 3px 12px;
+  border-radius: 14px;
+  font-size: 1.4rem;
+  font-weight: 900;
+  display: inline-block;
+  margin: 0 4px;
+}
+
+.cauldron-area {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 10px 0;
+}
+.cauldron-svg {
+  width: 175px;
+  height: 155px;
+}
+.cauldron-smoke {
+  position: absolute;
+  top: -34px;
+  font-size: 2.4rem;
+  opacity: 0;
+  transition: all 0.5s ease;
+  pointer-events: none;
+}
+.cauldron-hint {
+  position: absolute;
+  bottom: -32px;
+  background: rgba(0, 0, 0, 0.7);
+  padding: 5px 16px;
+  border-radius: 16px;
+  font-size: 0.95rem;
+  color: #FDE047;
+  white-space: nowrap;
+  border: 1px solid rgba(253, 224, 71, 0.35);
+}
+
+.potion-bottles-shelf {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.09);
+  border-radius: 22px;
+  padding: 12px 14px;
+  display: grid;
+  grid-template-columns: repeat(9, 1fr);
+  gap: 8px;
+  border: 2px solid rgba(255, 255, 255, 0.16);
+}
+@media (max-width: 620px) {
+  .potion-bottles-shelf {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+.bottle-item {
+  background: rgba(255, 255, 255, 0.14);
+  border: 2px solid #C084FC;
+  border-radius: 18px;
+  padding: 8px 2px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.bottle-item.selected {
+  background: #A855F7;
+  border-color: #FDE047;
+  transform: translateY(-8px) scale(1.1);
+  box-shadow: 0 0 16px #C084FC;
+}
+.bottle-item:active {
+  transform: scale(0.92);
+}
+.bottle-icon {
+  font-size: 1.65rem;
+}
+.bottle-num {
+  font-size: 1.25rem;
+  font-weight: 900;
+  color: #FDE047;
+}
+
+
+/* --------------------------------------------------------------------------
+   GAME 4: 太空隕石防衛戰 (Space Defense)
+   -------------------------------------------------------------------------- */
+#space-stage {
+  flex: 1;
+  background: radial-gradient(circle at center, #0B0F19 0%, #030712 100%);
+  color: white;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px 24px;
+  overflow: hidden;
+  min-height: 520px;
+}
+
+.space-mode-bar {
+  display: flex;
+  gap: 10px;
+  z-index: 20;
+}
+.mode-tab {
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid #38BDF8;
+  color: #BAE6FD;
+  padding: 5px 16px;
+  border-radius: 14px;
+  font-size: 0.9rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.mode-tab.active {
+  background: #0284C7;
+  color: white;
+  border-color: #7DD3FC;
+}
+
+.space-flight-field {
+  width: 100%;
+  flex: 1;
+  position: relative;
+}
+.meteor-actor {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 125px;
+  height: 125px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: top 0.08s linear;
+  z-index: 10;
+}
+.meteor-rock {
+  font-size: 3.6rem;
+  filter: drop-shadow(0 0 16px #F97316);
+  animation: spinRock 6s linear infinite;
+}
+@keyframes spinRock {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+.meteor-equation {
+  background: rgba(15, 23, 42, 0.92);
+  border: 3px solid #F97316;
+  border-radius: 16px;
+  padding: 4px 16px;
+  font-size: 1.4rem;
+  font-weight: 900;
+  color: #FED7AA;
+  white-space: nowrap;
+  box-shadow: 0 0 14px rgba(249, 115, 22, 0.5);
+}
+
+#laser-canvas {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 15;
+}
+
+.turrets-row {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  z-index: 20;
+}
+@media (max-width: 500px) {
+  .turrets-row {
+    gap: 8px;
+  }
+}
+.turret-btn {
+  background: linear-gradient(180deg, #1E293B 0%, #0F172A 100%);
+  border: 3px solid #38BDF8;
+  border-radius: 20px;
+  padding: 12px 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  box-shadow: 0 6px 15px rgba(56, 189, 248, 0.25);
+  transition: all 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.turret-btn:active {
+  transform: scale(0.92);
+  border-color: #F43F5E;
+}
+.turret-icon {
+  font-size: 1.85rem;
+}
+.turret-answer {
+  font-size: 1.55rem;
+  font-weight: 900;
+  color: #38BDF8;
+}
+
+
+/* --------------------------------------------------------------------------
+   GAME 5: 親子翻翻樂對決 (Card Matching)
+   -------------------------------------------------------------------------- */
+#cards-stage {
+  flex: 1;
+  background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 50%, #FBBF24 100%);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 14px 18px 24px;
+  overflow: hidden;
+  min-height: 520px;
+}
+
+.cards-top-dashboard {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+  gap: 12px;
+}
+.player-score-box {
+  background: white;
+  border-radius: 18px;
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 3px solid #E2E8F0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  transition: all 0.2s ease;
+}
+.player-score-box.active-turn {
+  border-color: #F59E0B;
+  background: #FEF08A;
+  transform: scale(1.06);
+  box-shadow: 0 6px 16px rgba(245, 158, 11, 0.3);
+}
+.player-avatar {
+  font-size: 1.6rem;
+}
+.player-name {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #1E293B;
+}
+.player-pts {
+  font-size: 1.35rem;
+  font-weight: 900;
+  color: #B45309;
+}
+
+.card-grid-board {
+  width: 100%;
+  max-width: 580px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  perspective: 1000px;
+}
+@media (max-width: 480px) {
+  .card-grid-board {
+    gap: 7px;
+  }
+}
+.flip-card {
+  aspect-ratio: 1;
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  cursor: pointer;
+}
+.flip-card.flipped {
+  transform: rotateY(180deg);
+}
+.flip-card.matched {
+  transform: rotateY(180deg) scale(0.92);
+  opacity: 0.42;
+  pointer-events: none;
+}
+.card-front, .card-back {
+  position: absolute;
+  inset: 0;
+  border-radius: 18px;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  font-weight: 900;
+}
+.card-back {
+  background: white;
+  border: 3px solid #F59E0B;
+  color: #F59E0B;
+  font-size: 2.2rem;
+}
+.card-front {
+  background: white;
+  border: 4px solid #38BDF8;
+  color: #0369A1;
+  font-size: 1.35rem;
+  transform: rotateY(180deg);
+  text-align: center;
+  padding: 4px;
+}

@@ -1,0 +1,2706 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>九九乘法大冒險 - 兒童趣味數學樂園</title>
+  <style>
+    :root {
+      --primary: #0284C7;
+      --primary-light: #38BDF8;
+      --secondary: #F59E0B;
+      --secondary-light: #FEF08A;
+      --accent: #EC4899;
+      --accent-light: #F472B6;
+      --success: #10B981;
+      --bg-gradient: linear-gradient(135deg, #E0F2FE 0%, #BAE6FD 50%, #7DD3FC 100%);
+      --text-dark: #1E293B;
+      --text-muted: #64748B;
+      --radius-lg: 28px;
+      --radius-md: 18px;
+      --radius-sm: 12px;
+      --font-game: 'Fredoka', 'Quicksand', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang TC", "Microsoft JhengHei", sans-serif;
+      --shadow-soft: 0 10px 25px rgba(2, 132, 199, 0.15);
+      --shadow-card: 0 6px 18px rgba(0, 0, 0, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+      touch-action: manipulation;
+    }
+
+    body {
+      font-family: var(--font-game);
+      background: var(--bg-gradient);
+      color: var(--text-dark);
+      min-height: 100vh;
+      min-height: 100dvh;
+      overflow-x: hidden;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+
+    /* 頂部通用導航欄 */
+    header {
+      width: 100%;
+      max-width: 920px;
+      padding: 12px 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 100;
+      padding-top: max(12px, env(safe-area-inset-top));
+    }
+
+    .nav-btn {
+      background: white;
+      border: 3px solid var(--primary-light);
+      border-radius: 999px;
+      padding: 8px 18px;
+      font-size: 1rem;
+      font-weight: 800;
+      color: var(--primary);
+      box-shadow: 0 4px 12px rgba(2, 132, 199, 0.18);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .nav-btn:hover {
+      background: #F0F9FF;
+      transform: translateY(-2px);
+    }
+    .nav-btn:active {
+      transform: scale(0.92);
+    }
+
+    .selected-indicator {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(8px);
+      padding: 8px 18px;
+      border-radius: 999px;
+      font-size: 0.98rem;
+      font-weight: 800;
+      color: #0369A1;
+      border: 2px dashed var(--primary-light);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+    }
+
+    /* 主容器 */
+    #app-container {
+      width: 100%;
+      max-width: 920px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 8px 16px 28px;
+      position: relative;
+    }
+
+    /* 視圖切換容器 */
+    .view-section {
+      width: 100%;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      animation: popIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .view-section.active {
+      display: flex;
+    }
+
+    @keyframes popIn {
+      from { opacity: 0; transform: scale(0.96); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    /* 主選單標題卡 */
+    .menu-title-card {
+      background: white;
+      border-radius: var(--radius-lg);
+      padding: 22px 24px;
+      text-align: center;
+      box-shadow: var(--shadow-soft);
+      border: 4px solid #FCD34D;
+      margin-bottom: 20px;
+      width: 100%;
+      max-width: 700px;
+    }
+    .menu-title-card h1 {
+      font-size: 2.1rem;
+      color: var(--secondary);
+      text-shadow: 2px 2px 0px #FEF3C7;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+    .menu-title-card p {
+      color: var(--text-muted);
+      font-size: 1.05rem;
+      font-weight: 600;
+    }
+
+    /* 數字設定區 (2, 3, ... 9 自選) */
+    .selector-card {
+      background: white;
+      border-radius: 26px;
+      padding: 20px 22px;
+      width: 100%;
+      max-width: 700px;
+      box-shadow: var(--shadow-card);
+      border: 3px solid #BAE6FD;
+      margin-bottom: 24px;
+    }
+    .selector-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .selector-header h3 {
+      font-size: 1.2rem;
+      color: #0369A1;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .preset-btns {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .mini-btn {
+      background: #F0F9FF;
+      border: 2px solid #7DD3FC;
+      border-radius: 12px;
+      padding: 6px 14px;
+      font-size: 0.9rem;
+      color: #0284C7;
+      font-weight: 800;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .mini-btn:hover {
+      background: #E0F2FE;
+      transform: translateY(-1px);
+    }
+    .mini-btn:active {
+      background: #BAE6FD;
+      transform: scale(0.95);
+    }
+
+    /* 2 到 9 數字按鈕網格 */
+    .num-checkbox-grid {
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      gap: 10px;
+    }
+    @media (max-width: 650px) {
+      .num-checkbox-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 10px;
+      }
+    }
+    .num-pill {
+      background: #F8FAFC;
+      border: 3px solid #CBD5E1;
+      border-radius: 20px;
+      padding: 10px 4px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+      box-shadow: 0 4px 0 #94A3B8;
+      position: relative;
+    }
+    .num-pill:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 0 #94A3B8;
+    }
+    .num-pill.selected {
+      background: #FEF08A;
+      border-color: #F59E0B;
+      color: #B45309;
+      transform: translateY(-4px);
+      box-shadow: 0 7px 0 #D97706;
+    }
+    .num-pill:active {
+      transform: translateY(2px);
+      box-shadow: 0 1px 0 #D97706;
+    }
+    .num-pill-val {
+      font-size: 1.6rem;
+      font-weight: 900;
+      line-height: 1;
+      margin-bottom: 2px;
+    }
+    .num-pill-sub {
+      font-size: 0.75rem;
+      font-weight: 800;
+      color: #64748B;
+    }
+    .num-pill.selected .num-pill-sub {
+      color: #B45309;
+    }
+    .num-pill-check {
+      position: absolute;
+      top: -6px;
+      right: -6px;
+      background: #10B981;
+      color: white;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      font-size: 0.75rem;
+      font-weight: 900;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    }
+    .num-pill.selected .num-pill-check {
+      display: flex;
+    }
+
+    /* 遊戲卡片列表 (主選單 5 大遊戲) */
+    .game-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 18px;
+      width: 100%;
+      max-width: 840px;
+    }
+
+    .game-card {
+      background: white;
+      border-radius: 26px;
+      padding: 22px 20px;
+      border: 4px solid #E2E8F0;
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+    }
+    .game-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
+    }
+    .game-card:active {
+      transform: scale(0.97);
+    }
+
+    .game-card[data-game="monster"] { border-color: #F472B6; background: linear-gradient(135deg, #FFF1F2 0%, #FFFFFF 100%); }
+    .game-card[data-game="frog"] { border-color: #4ADE80; background: linear-gradient(135deg, #F0FDF4 0%, #FFFFFF 100%); }
+    .game-card[data-game="potion"] { border-color: #C084FC; background: linear-gradient(135deg, #FAF5FF 0%, #FFFFFF 100%); }
+    .game-card[data-game="space"] { border-color: #60A5FA; background: linear-gradient(135deg, #EFF6FF 0%, #FFFFFF 100%); }
+    .game-card[data-game="cards"] { border-color: #FBBF24; background: linear-gradient(135deg, #FFFBEB 0%, #FFFFFF 100%); }
+
+    .game-card-icon {
+      width: 76px;
+      height: 76px;
+      border-radius: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.6rem;
+      flex-shrink: 0;
+      background: white;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+    .game-card-info h3 {
+      font-size: 1.3rem;
+      margin-bottom: 4px;
+      color: var(--text-dark);
+    }
+    .game-card-tag {
+      display: inline-block;
+      font-size: 0.78rem;
+      font-weight: 800;
+      padding: 3px 10px;
+      border-radius: 8px;
+      margin-bottom: 6px;
+    }
+    .game-card[data-game="monster"] .game-card-tag { background: #FCE7F3; color: #DB2777; }
+    .game-card[data-game="frog"] .game-card-tag { background: #DCFCE7; color: #16A34A; }
+    .game-card[data-game="potion"] .game-card-tag { background: #F3E8FF; color: #9333EA; }
+    .game-card[data-game="space"] .game-card-tag { background: #DBEAFE; color: #2563EB; }
+    .game-card[data-game="cards"] .game-card-tag { background: #FEF3C7; color: #D97706; }
+
+    .game-card-info p {
+      font-size: 0.92rem;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    /* 遊戲通用舞台封裝框 (Stage Wrapper) */
+    .game-stage-wrapper {
+      width: 100%;
+      max-width: 840px;
+      background: white;
+      border-radius: 32px;
+      box-shadow: 0 14px 35px rgba(0, 0, 0, 0.12);
+      border: 5px solid white;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      min-height: 520px;
+    }
+    @media (max-height: 700px) {
+      .game-stage-wrapper { min-height: 460px; }
+    }
+
+    .game-top-bar {
+      padding: 12px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(8px);
+      border-bottom: 2px solid #F1F5F9;
+      z-index: 20;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .game-title-badge {
+      font-size: 1.25rem;
+      font-weight: 900;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text-dark);
+    }
+    .score-badge {
+      background: #FEF08A;
+      color: #854D0E;
+      padding: 6px 16px;
+      border-radius: 999px;
+      font-weight: 900;
+      font-size: 0.95rem;
+      border: 2px solid #FDE047;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    /* 浮動提示 Toast */
+    .toast-feedback {
+      position: fixed;
+      top: 75px;
+      left: 50%;
+      transform: translateX(-50%) scale(0.8);
+      opacity: 0;
+      background: rgba(15, 23, 42, 0.92);
+      color: white;
+      padding: 10px 24px;
+      border-radius: 30px;
+      font-size: 1.15rem;
+      font-weight: 800;
+      pointer-events: none;
+      z-index: 9999;
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+      text-align: center;
+      max-width: 90vw;
+    }
+    .toast-feedback.show {
+      transform: translateX(-50%) scale(1);
+      opacity: 1;
+    }
+
+    /* 獲勝/過關慶祝彈窗 Modal */
+    .victory-modal {
+      position: absolute;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.65);
+      backdrop-filter: blur(6px);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 200;
+      animation: popIn 0.3s ease;
+    }
+    .victory-card {
+      background: white;
+      border-radius: 30px;
+      padding: 32px 28px;
+      text-align: center;
+      max-width: 440px;
+      width: 100%;
+      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+      border: 6px solid #FDE047;
+    }
+    .victory-card h2 {
+      font-size: 2.1rem;
+      color: var(--secondary);
+      margin-bottom: 12px;
+    }
+    .victory-card p {
+      font-size: 1.15rem;
+      color: #475569;
+      margin-bottom: 26px;
+      line-height: 1.45;
+    }
+    .modal-btns {
+      display: flex;
+      gap: 14px;
+      justify-content: center;
+    }
+    .primary-btn {
+      background: var(--success);
+      color: white;
+      border: none;
+      padding: 12px 26px;
+      font-size: 1.15rem;
+      font-weight: 900;
+      border-radius: 18px;
+      cursor: pointer;
+      box-shadow: 0 5px 0 #059669;
+      transition: all 0.2s;
+    }
+    .primary-btn:active {
+      transform: translateY(3px);
+      box-shadow: 0 2px 0 #059669;
+    }
+    .secondary-btn {
+      background: #F1F5F9;
+      color: #475569;
+      border: 2px solid #CBD5E1;
+      padding: 12px 22px;
+      font-size: 1.1rem;
+      font-weight: 800;
+      border-radius: 18px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .secondary-btn:active {
+      transform: scale(0.96);
+    }
+
+    /* 全螢幕煙火彩紙 Canvas */
+    #confetti-canvas {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 9998;
+    }
+
+    /* --------------------------------------------------------------------------
+       各遊戲特色樣式
+       -------------------------------------------------------------------------- */
+    /* 遊戲 1 怪獸 */
+    #monster-stage {
+      flex: 1;
+      background: radial-gradient(circle at center, #FDF4FF 0%, #FAE8FF 60%, #F5D0FE 100%);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px 28px;
+      overflow: hidden;
+      min-height: 480px;
+    }
+    .food-spawn-shelf {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      gap: 22px;
+      padding: 8px 0;
+      z-index: 30;
+      min-height: 96px;
+    }
+    .food-item {
+      width: 86px;
+      height: 86px;
+      border-radius: 22px;
+      background: white;
+      box-shadow: 0 8px 18px rgba(168, 85, 247, 0.22);
+      border: 3px solid #F472B6;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: grab;
+      touch-action: none;
+      user-select: none;
+      transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+      position: relative;
+    }
+    .food-item:hover {
+      transform: scale(1.05);
+    }
+    .food-item:active {
+      cursor: grabbing;
+      transform: scale(1.12);
+      box-shadow: 0 12px 26px rgba(168, 85, 247, 0.38);
+    }
+    .food-item.dragging {
+      position: fixed;
+      pointer-events: none;
+      z-index: 9999;
+      transform: scale(1.18) translate(-50%, -50%);
+      transition: none;
+    }
+    .food-icon {
+      font-size: 2.1rem;
+      line-height: 1;
+      pointer-events: none;
+    }
+    .food-val {
+      font-size: 1.3rem;
+      font-weight: 900;
+      color: #9D174D;
+      pointer-events: none;
+    }
+    .monster-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      margin-top: 6px;
+    }
+    .monster-speech-bubble {
+      background: white;
+      border: 4px solid #F472B6;
+      border-radius: 26px;
+      padding: 10px 24px;
+      font-size: 1.65rem;
+      font-weight: 900;
+      color: #9D174D;
+      box-shadow: 0 6px 16px rgba(244, 114, 182, 0.25);
+      position: relative;
+      margin-bottom: 12px;
+      animation: floatBubble 2.5s ease-in-out infinite alternate;
+    }
+    .monster-speech-bubble::after {
+      content: '';
+      position: absolute;
+      bottom: -14px;
+      left: 50%;
+      transform: translateX(-50%);
+      border-width: 14px 12px 0;
+      border-style: solid;
+      border-color: #F472B6 transparent;
+      display: block;
+      width: 0;
+    }
+    @keyframes floatBubble {
+      from { transform: translateY(0); }
+      to { transform: translateY(-7px); }
+    }
+    .monster-svg-box {
+      width: 190px;
+      height: 190px;
+      position: relative;
+      transition: transform 0.3s;
+    }
+    .monster-mouth-target {
+      position: absolute;
+      width: 110px;
+      height: 80px;
+      top: 90px;
+      left: 40px;
+      border-radius: 50%;
+      z-index: 10;
+    }
+    .satiety-bar-wrap {
+      width: 82%;
+      max-width: 340px;
+      background: white;
+      border: 3px solid #F472B6;
+      border-radius: 22px;
+      padding: 4px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .satiety-fill {
+      height: 20px;
+      background: linear-gradient(90deg, #F472B6, #EC4899);
+      border-radius: 14px;
+      width: 0%;
+      transition: width 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .satiety-text {
+      font-size: 0.9rem;
+      font-weight: 900;
+      color: #BE185D;
+      white-space: nowrap;
+      padding-right: 8px;
+    }
+
+    /* 遊戲 2 青蛙 */
+    #frog-stage {
+      flex: 1;
+      background: linear-gradient(180deg, #86EFAC 0%, #34D399 22%, #38BDF8 55%, #0284C7 100%);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px 20px;
+      overflow: hidden;
+      min-height: 520px;
+    }
+    .river-scene {
+      width: 100%;
+      flex: 1;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .treasure-island {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 12px;
+      background: rgba(254, 240, 138, 0.45);
+      backdrop-filter: blur(4px);
+      padding: 10px 16px;
+      border-radius: 22px;
+      z-index: 10;
+    }
+    .treasure-box-icon {
+      font-size: 2.8rem;
+      filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+      animation: wiggle 2s infinite ease-in-out;
+    }
+    @keyframes wiggle {
+      0%, 100% { transform: rotate(-4deg); }
+      50% { transform: rotate(4deg); }
+    }
+    .frog-question-banner {
+      background: white;
+      border: 4px solid #10B981;
+      border-radius: 20px;
+      padding: 8px 26px;
+      font-size: 1.85rem;
+      font-weight: 900;
+      color: #065F46;
+      box-shadow: 0 6px 15px rgba(5, 150, 105, 0.28);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* 中間河道區：荷葉漂浮在河水中央，完全獨立，絕不與青蛙重疊 */
+    .river-stream-area {
+      width: 100%;
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      z-index: 20;
+      margin: 15px 0 10px;
+    }
+    .lilypads-container {
+      width: 100%;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      padding: 0 10px;
+    }
+    .lilypad-btn {
+      width: 110px;
+      height: 98px;
+      background: radial-gradient(circle, #4ADE80 30%, #16A34A 100%);
+      border: 4px solid #15803D;
+      border-radius: 50% 50% 45% 45% / 55% 55% 40% 40%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: white;
+      font-size: 1.9rem;
+      font-weight: 900;
+      box-shadow: 0 8px 20px rgba(22, 163, 74, 0.45);
+      transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+      position: relative;
+      animation: floatLily 3s ease-in-out infinite alternate;
+    }
+    .lilypad-btn:nth-child(2) {
+      animation-delay: 0.5s;
+    }
+    .lilypad-btn:nth-child(3) {
+      animation-delay: 1s;
+    }
+    @keyframes floatLily {
+      from { transform: translateY(0); }
+      to { transform: translateY(-8px); }
+    }
+    .lilypad-btn::before {
+      content: '🌸';
+      position: absolute;
+      top: -8px;
+      right: -4px;
+      font-size: 1.3rem;
+    }
+    .lilypad-btn:hover {
+      transform: scale(1.08) translateY(-4px);
+    }
+    .lilypad-btn:active {
+      transform: scale(0.92);
+    }
+    .lilypad-btn.sink {
+      animation: sinkPad 0.7s forwards ease;
+    }
+    @keyframes sinkPad {
+      0% { transform: translateY(0) scale(1); opacity: 1; }
+      50% { transform: translateY(35px) scale(0.7); opacity: 0.35; }
+      100% { transform: translateY(0) scale(1); opacity: 1; }
+    }
+
+    /* 底部河岸起跳區：青蛙站在起跳點，與荷葉保持寬裕距離 */
+    .frog-start-bank {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+      position: relative;
+      min-height: 105px;
+      z-index: 25;
+    }
+    .start-dock-leaf {
+      width: 160px;
+      height: 42px;
+      background: radial-gradient(ellipse at center, #15803D 0%, #14532D 100%);
+      border: 3px solid #166534;
+      border-radius: 999px;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: absolute;
+      bottom: 6px;
+    }
+    .start-dock-label {
+      font-size: 0.85rem;
+      font-weight: 900;
+      color: #BBF7D0;
+      letter-spacing: 2px;
+    }
+    .frog-actor {
+      width: 90px;
+      height: 90px;
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      transition: all 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+      z-index: 30;
+      pointer-events: none;
+    }
+    .frog-actor.jumping {
+      transition: all 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+    .rainbow-banner {
+      position: absolute;
+      top: 15px;
+      background: linear-gradient(90deg, #F43F5E, #F59E0B, #10B981, #06B6D4, #8B5CF6);
+      color: white;
+      font-weight: 900;
+      font-size: 1.05rem;
+      padding: 6px 18px;
+      border-radius: 20px;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+      display: none;
+      animation: pulseRainbow 0.9s infinite alternate;
+      z-index: 50;
+    }
+    @keyframes pulseRainbow {
+      from { transform: scale(0.96); }
+      to { transform: scale(1.04); }
+    }
+
+    /* 遊戲 3 魔藥 */
+    #potion-stage {
+      flex: 1;
+      background: radial-gradient(circle at center, #2E1065 0%, #1E1B4B 60%, #0F172A 100%);
+      color: white;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px 24px;
+      overflow: hidden;
+      min-height: 500px;
+    }
+    .wizard-customer-box {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      background: rgba(255, 255, 255, 0.12);
+      backdrop-filter: blur(10px);
+      padding: 12px 20px;
+      border-radius: 24px;
+      border: 2px solid rgba(255, 255, 255, 0.22);
+    }
+    .customer-avatar {
+      font-size: 3.2rem;
+      filter: drop-shadow(0 0 12px #A855F7);
+    }
+    .customer-bubble {
+      flex: 1;
+      font-size: 1.15rem;
+      font-weight: 700;
+      line-height: 1.4;
+    }
+    .target-energy-badge {
+      background: #F59E0B;
+      color: #78350F;
+      padding: 3px 12px;
+      border-radius: 14px;
+      font-size: 1.4rem;
+      font-weight: 900;
+      display: inline-block;
+      margin: 0 4px;
+    }
+    .cauldron-area {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin: 10px 0;
+    }
+    .cauldron-svg {
+      width: 175px;
+      height: 155px;
+    }
+    .cauldron-smoke {
+      position: absolute;
+      top: -34px;
+      font-size: 2.4rem;
+      opacity: 0;
+      transition: all 0.5s ease;
+      pointer-events: none;
+    }
+    .cauldron-hint {
+      position: absolute;
+      bottom: -32px;
+      background: rgba(0, 0, 0, 0.7);
+      padding: 5px 16px;
+      border-radius: 16px;
+      font-size: 0.95rem;
+      color: #FDE047;
+      white-space: nowrap;
+      border: 1px solid rgba(253, 224, 71, 0.35);
+    }
+    .potion-bottles-shelf {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.09);
+      border-radius: 22px;
+      padding: 12px 14px;
+      display: grid;
+      grid-template-columns: repeat(9, 1fr);
+      gap: 8px;
+      border: 2px solid rgba(255, 255, 255, 0.16);
+    }
+    @media (max-width: 620px) {
+      .potion-bottles-shelf {
+        grid-template-columns: repeat(5, 1fr);
+      }
+    }
+    .bottle-item {
+      background: rgba(255, 255, 255, 0.14);
+      border: 2px solid #C084FC;
+      border-radius: 18px;
+      padding: 8px 2px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .bottle-item.selected {
+      background: #A855F7;
+      border-color: #FDE047;
+      transform: translateY(-8px) scale(1.1);
+      box-shadow: 0 0 16px #C084FC;
+    }
+    .bottle-item:active {
+      transform: scale(0.92);
+    }
+    .bottle-icon {
+      font-size: 1.65rem;
+    }
+    .bottle-num {
+      font-size: 1.25rem;
+      font-weight: 900;
+      color: #FDE047;
+    }
+
+    /* 遊戲 4 太空 */
+    #space-stage {
+      flex: 1;
+      background: radial-gradient(circle at center, #0B0F19 0%, #030712 100%);
+      color: white;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px 24px;
+      overflow: hidden;
+      min-height: 520px;
+    }
+    .space-mode-bar {
+      display: flex;
+      gap: 10px;
+      z-index: 20;
+    }
+    .mode-tab {
+      background: rgba(255, 255, 255, 0.1);
+      border: 2px solid #38BDF8;
+      color: #BAE6FD;
+      padding: 5px 16px;
+      border-radius: 14px;
+      font-size: 0.9rem;
+      font-weight: 800;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .mode-tab.active {
+      background: #0284C7;
+      color: white;
+      border-color: #7DD3FC;
+    }
+    .space-flight-field {
+      width: 100%;
+      flex: 1;
+      position: relative;
+    }
+    .meteor-actor {
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 125px;
+      height: 125px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transition: top 0.08s linear;
+      z-index: 10;
+    }
+    .meteor-rock {
+      font-size: 3.6rem;
+      filter: drop-shadow(0 0 16px #F97316);
+      animation: spinRock 6s linear infinite;
+    }
+    @keyframes spinRock {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    .meteor-equation {
+      background: rgba(15, 23, 42, 0.92);
+      border: 3px solid #F97316;
+      border-radius: 16px;
+      padding: 4px 16px;
+      font-size: 1.4rem;
+      font-weight: 900;
+      color: #FED7AA;
+      white-space: nowrap;
+      box-shadow: 0 0 14px rgba(249, 115, 22, 0.5);
+    }
+    #laser-canvas {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 15;
+    }
+    .turrets-row {
+      width: 100%;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      z-index: 20;
+    }
+    @media (max-width: 500px) {
+      .turrets-row {
+        gap: 8px;
+      }
+    }
+    .turret-btn {
+      background: linear-gradient(180deg, #1E293B 0%, #0F172A 100%);
+      border: 3px solid #38BDF8;
+      border-radius: 20px;
+      padding: 12px 6px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+      box-shadow: 0 6px 15px rgba(56, 189, 248, 0.25);
+      transition: all 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .turret-btn:active {
+      transform: scale(0.92);
+      border-color: #F43F5E;
+    }
+    .turret-icon {
+      font-size: 1.85rem;
+    }
+    .turret-answer {
+      font-size: 1.55rem;
+      font-weight: 900;
+      color: #38BDF8;
+    }
+
+    /* 遊戲 5 卡牌 */
+    #cards-stage {
+      flex: 1;
+      background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 50%, #FBBF24 100%);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 14px 18px 24px;
+      overflow: hidden;
+      min-height: 520px;
+    }
+    .cards-top-dashboard {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+      gap: 12px;
+    }
+    .player-score-box {
+      background: white;
+      border-radius: 18px;
+      padding: 8px 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border: 3px solid #E2E8F0;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+      transition: all 0.2s ease;
+    }
+    .player-score-box.active-turn {
+      border-color: #F59E0B;
+      background: #FEF08A;
+      transform: scale(1.06);
+      box-shadow: 0 6px 16px rgba(245, 158, 11, 0.3);
+    }
+    .player-avatar {
+      font-size: 1.6rem;
+    }
+    .player-name {
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: #1E293B;
+    }
+    .player-pts {
+      font-size: 1.35rem;
+      font-weight: 900;
+      color: #B45309;
+    }
+    .card-grid-board {
+      width: 100%;
+      max-width: 580px;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      perspective: 1000px;
+    }
+    @media (max-width: 480px) {
+      .card-grid-board {
+        gap: 7px;
+      }
+    }
+    .flip-card {
+      aspect-ratio: 1;
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+      cursor: pointer;
+    }
+    .flip-card.flipped {
+      transform: rotateY(180deg);
+    }
+    .flip-card.matched {
+      transform: rotateY(180deg) scale(0.92);
+      opacity: 0.42;
+      pointer-events: none;
+    }
+    .card-front, .card-back {
+      position: absolute;
+      inset: 0;
+      border-radius: 18px;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      font-weight: 900;
+    }
+    .card-back {
+      background: white;
+      border: 3px solid #F59E0B;
+      color: #F59E0B;
+      font-size: 2.2rem;
+    }
+    .card-front {
+      background: white;
+      border: 4px solid #38BDF8;
+      color: #0369A1;
+      font-size: 1.35rem;
+      transform: rotateY(180deg);
+      text-align: center;
+      padding: 4px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 頂部通用導航 -->
+  <header>
+    <button id="btn-back-home" class="nav-btn" style="display: none;">
+      <span>🏠</span> 回主選單
+    </button>
+    <div id="badge-selected-nums" class="selected-indicator">
+      <span>🔢</span> 目前練習：<strong id="header-nums-text">2, 3, 5</strong> 的乘法表
+    </div>
+    <button id="btn-toggle-sound" class="nav-btn" aria-label="開關音效">
+      <span id="sound-icon">🔊</span>
+    </button>
+  </header>
+
+  <!-- 主應用程式容器 -->
+  <main id="app-container">
+
+    <!-- ===================== 1. 主選單首頁 (Main Menu) ===================== -->
+    <section id="view-menu" class="view-section active">
+      <div class="menu-title-card">
+        <h1>🌟 九九乘法大冒險 🌟</h1>
+        <p>為 7 歲小朋友設計的趣味數學闖關樂園！</p>
+      </div>
+
+      <!-- 數字選擇器 (2, 3, ... 9 自選) -->
+      <div class="selector-card">
+        <div class="selector-header">
+          <h3><span>🎯</span> 選擇要練習的乘法表（可複選）：</h3>
+          <div class="preset-btns">
+            <button class="mini-btn" id="btn-preset-all">全部 (2~9)</button>
+            <button class="mini-btn" id="btn-preset-basic">基礎 (2, 3, 5)</button>
+            <button class="mini-btn" id="btn-preset-adv">進階 (6, 7, 8, 9)</button>
+          </div>
+        </div>
+        <div class="num-checkbox-grid" id="num-selector-grid">
+          <!-- 2 到 9 數字膠囊切換鈕動態產生 -->
+        </div>
+      </div>
+
+      <!-- 5 款遊戲選單卡片 -->
+      <div class="game-grid">
+        <!-- 遊戲 1 -->
+        <div class="game-card" data-game="monster" id="card-monster">
+          <div class="game-card-icon">👾</div>
+          <div class="game-card-info">
+            <span class="game-card-tag">拖曳配對型</span>
+            <h3>1. 貪吃怪獸餵食秀</h3>
+            <p>把正確得數的美食拖進怪獸大嘴巴，看牠打飽嗝、冒愛心！</p>
+          </div>
+        </div>
+
+        <!-- 遊戲 2 -->
+        <div class="game-card" data-game="frog" id="card-frog">
+          <div class="game-card-icon">🐸</div>
+          <div class="game-card-info">
+            <span class="game-card-tag">路徑闖關型</span>
+            <h3>2. 叢林跳跳蛙</h3>
+            <p>點選正確荷葉讓青蛙跳過河找寶藏，連對 3 題彩虹加速衝刺！</p>
+          </div>
+        </div>
+
+        <!-- 遊戲 3 -->
+        <div class="game-card" data-game="potion" id="card-potion">
+          <div class="game-card-icon">🧪</div>
+          <div class="game-card-info">
+            <span class="game-card-tag">逆向拆解型</span>
+            <h3>3. 魔法藥水調配師</h3>
+            <p>客人指定能量值，挑選兩種材料丟進大鍋爐，練就超強數感！</p>
+          </div>
+        </div>
+
+        <!-- 遊戲 4 -->
+        <div class="game-card" data-game="space" id="card-space">
+          <div class="game-card-icon">🚀</div>
+          <div class="game-card-info">
+            <span class="game-card-tag">快速點擊型</span>
+            <h3>4. 太空隕石防衛戰</h3>
+            <p>點擊正確砲台發射雷射擊碎隕石！支援悠閒練習與小小英雄模式！</p>
+          </div>
+        </div>
+
+        <!-- 遊戲 5 -->
+        <div class="game-card" data-game="cards" id="card-cards">
+          <div class="game-card-icon">🃏</div>
+          <div class="game-card-info">
+            <span class="game-card-tag">記憶對決型</span>
+            <h3>5. 親子翻翻樂對決</h3>
+            <p>算式與答案卡牌翻翻配對，支援單人練習或爸爸媽媽雙人對戰！</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== 2. 遊戲 1: 貪吃怪獸餵食秀 ===================== -->
+    <section id="view-monster" class="view-section">
+      <div class="game-stage-wrapper">
+        <div class="game-top-bar">
+          <div class="game-title-badge">👾 貪吃怪獸餵食秀</div>
+          <div class="score-badge" id="monster-score-text">已吃飽：0 / 5</div>
+        </div>
+        <div id="monster-stage">
+          <div class="food-spawn-shelf" id="monster-food-shelf"></div>
+          <div class="monster-container">
+            <div class="monster-speech-bubble" id="monster-bubble">我要吃 3 × 4 ！</div>
+            <div class="monster-svg-box" id="monster-body-box">
+              <svg viewBox="0 0 200 200" width="100%" height="100%">
+                <ellipse cx="100" cy="115" rx="75" ry="68" fill="#EC4899" />
+                <ellipse cx="100" cy="115" rx="66" ry="60" fill="#F472B6" />
+                <circle cx="50" cy="55" r="14" fill="#F472B6" />
+                <circle cx="50" cy="55" r="8" fill="#FDE047" />
+                <circle cx="150" cy="55" r="14" fill="#F472B6" />
+                <circle cx="150" cy="55" r="8" fill="#FDE047" />
+                <circle cx="75" cy="90" r="16" fill="white" />
+                <circle id="monster-pupil-l" cx="77" cy="90" r="8" fill="#1E293B" />
+                <circle cx="79" cy="87" r="3" fill="white" />
+                <circle cx="125" cy="90" r="16" fill="white" />
+                <circle id="monster-pupil-r" cx="123" cy="90" r="8" fill="#1E293B" />
+                <circle cx="125" cy="87" r="3" fill="white" />
+                <circle cx="56" cy="110" r="10" fill="#FB7185" opacity="0.6" />
+                <circle cx="144" cy="110" r="10" fill="#FB7185" opacity="0.6" />
+                <ellipse id="monster-mouth" cx="100" cy="132" rx="36" ry="26" fill="#831843" stroke="#FBCFE8" stroke-width="4" />
+                <ellipse id="monster-tongue" cx="100" cy="142" rx="20" ry="12" fill="#FB7185" />
+                <polygon points="85,116 93,124 101,116" fill="white" />
+                <polygon points="101,116 109,124 117,116" fill="white" />
+              </svg>
+              <div id="monster-mouth-drop-zone" class="monster-mouth-target"></div>
+            </div>
+          </div>
+          <div class="satiety-bar-wrap">
+            <div class="satiety-fill" id="monster-progress-fill"></div>
+            <span class="satiety-text" id="monster-progress-text">飽足感 0%</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== 3. 遊戲 2: 叢林跳跳蛙 ===================== -->
+    <section id="view-frog" class="view-section">
+      <div class="game-stage-wrapper">
+        <div class="game-top-bar">
+          <div class="game-title-badge">🐸 叢林跳跳蛙</div>
+          <div class="score-badge" id="frog-step-badge">進度：第 1 / 5 步</div>
+        </div>
+        <div id="frog-stage">
+          <div class="rainbow-banner" id="frog-rainbow-banner">🌈 連續答對 3 題！啟動彩虹加速，一次跳過兩格！</div>
+          <div class="river-scene">
+            <!-- 1. 頂部：寶藏終點島 -->
+            <div class="treasure-island">
+              <span class="treasure-box-icon">👑</span>
+              <div class="frog-question-banner" id="frog-question-box">
+                <span>題目：</span><strong id="frog-eq-text">5 × 6 = ?</strong>
+              </div>
+              <span class="treasure-box-icon">🎁</span>
+            </div>
+
+            <!-- 2. 中間河道：漂浮荷葉區 (居中獨立，絕對不會被青蛙擋到數字) -->
+            <div class="river-stream-area">
+              <div class="lilypads-container" id="frog-pads-container"></div>
+            </div>
+
+            <!-- 3. 底部：河岸起跳點與可愛青蛙 -->
+            <div class="frog-start-bank">
+              <div class="start-dock-leaf">
+                <span class="start-dock-label">🚩 起跳點</span>
+              </div>
+              <div class="frog-actor" id="frog-hero">
+                <svg viewBox="0 0 100 100" width="100%" height="100%">
+                  <ellipse cx="25" cy="72" rx="14" ry="9" fill="#15803D" />
+                  <ellipse cx="75" cy="72" rx="14" ry="9" fill="#15803D" />
+                  <ellipse cx="50" cy="58" rx="32" ry="28" fill="#22C55E" stroke="#16A34A" stroke-width="3" />
+                  <ellipse cx="50" cy="62" rx="20" ry="18" fill="#BBF7D0" />
+                  <circle cx="34" cy="32" r="14" fill="#22C55E" />
+                  <circle cx="34" cy="32" r="10" fill="white" />
+                  <circle cx="35" cy="32" r="5" fill="#0F172A" />
+                  <circle cx="66" cy="32" r="14" fill="#22C55E" />
+                  <circle cx="66" cy="32" r="10" fill="white" />
+                  <circle cx="65" cy="32" r="5" fill="#0F172A" />
+                  <path d="M 40 52 Q 50 62 60 52" stroke="#166534" stroke-width="3" fill="none" stroke-linecap="round" />
+                  <circle cx="30" cy="52" r="4" fill="#F472B6" />
+                  <circle cx="70" cy="52" r="4" fill="#F472B6" />
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== 4. 遊戲 3: 魔法藥水調配師 ===================== -->
+    <section id="view-potion" class="view-section">
+      <div class="game-stage-wrapper">
+        <div class="game-top-bar">
+          <div class="game-title-badge">🧪 魔法藥水調配師</div>
+          <div class="score-badge" id="potion-score-badge">已完成：0 瓶</div>
+        </div>
+        <div id="potion-stage">
+          <div class="wizard-customer-box">
+            <div class="customer-avatar" id="potion-customer-icon">🧝‍♀️</div>
+            <div class="customer-bubble">
+              嗨！我需要一瓶 <span class="target-energy-badge" id="potion-target-val">能量 24</span> 的魔法藥水！<br>
+              請幫我挑選 <strong>2 個材料</strong> 丟進大鍋爐熬煮吧！
+            </div>
+          </div>
+          <div class="cauldron-area">
+            <div class="cauldron-smoke" id="cauldron-smoke-emoji">✨💜✨</div>
+            <svg class="cauldron-svg" viewBox="0 0 200 180">
+              <ellipse cx="60" cy="160" rx="10" ry="15" fill="#1E1B4B" />
+              <ellipse cx="140" cy="160" rx="10" ry="15" fill="#1E1B4B" />
+              <ellipse cx="100" cy="115" rx="80" ry="55" fill="#312E81" stroke="#4C1D95" stroke-width="4" />
+              <ellipse id="cauldron-liquid" cx="100" cy="80" rx="70" ry="24" fill="#9333EA" stroke="#A855F7" stroke-width="3" />
+              <circle cx="80" cy="78" r="6" fill="#F472B6" opacity="0.8" />
+              <circle cx="115" cy="82" r="8" fill="#FDE047" opacity="0.8" />
+              <circle cx="100" cy="74" r="5" fill="#67E8F9" opacity="0.8" />
+              <path d="M 28 80 Q 100 102 172 80" stroke="#6D28D9" stroke-width="4" fill="none" />
+            </svg>
+            <div class="cauldron-hint" id="cauldron-status-hint">點選下方 2 個魔法材料瓶</div>
+          </div>
+          <div class="potion-bottles-shelf" id="potion-bottles-shelf"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== 5. 遊戲 4: 太空隕石防衛戰 ===================== -->
+    <section id="view-space" class="view-section">
+      <div class="game-stage-wrapper">
+        <div class="game-top-bar">
+          <div class="game-title-badge">🚀 太空隕石防衛戰</div>
+          <div class="space-mode-bar">
+            <button class="mode-tab active" id="tab-mode-relax">悠閒練習</button>
+            <button class="mode-tab" id="tab-mode-hero">小小英雄(60秒)</button>
+          </div>
+          <div class="score-badge" id="space-score-badge">得分：0</div>
+        </div>
+        <div id="space-stage">
+          <canvas id="laser-canvas"></canvas>
+          <div class="space-flight-field" id="space-field">
+            <div class="meteor-actor" id="space-meteor">
+              <span class="meteor-rock">☄️</span>
+              <div class="meteor-equation" id="space-meteor-eq">2 × 7</div>
+            </div>
+          </div>
+          <div class="turrets-row" id="space-turrets-container"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== 6. 遊戲 5: 親子翻翻樂對決 ===================== -->
+    <section id="view-cards" class="view-section">
+      <div class="game-stage-wrapper">
+        <div class="game-top-bar">
+          <div class="game-title-badge">🃏 親子翻翻樂對決</div>
+          <div class="space-mode-bar">
+            <button class="mode-tab active" id="tab-card-p1">單人挑戰</button>
+            <button class="mode-tab" id="tab-card-p2">雙人對決</button>
+            <button class="mode-tab" id="tab-card-count">12 張卡牌</button>
+          </div>
+          <button class="mini-btn" id="btn-card-restart">重新洗牌</button>
+        </div>
+        <div id="cards-stage">
+          <div class="cards-top-dashboard">
+            <div class="player-score-box active-turn" id="p1-box">
+              <span class="player-avatar">👦</span>
+              <div>
+                <div class="player-name" id="p1-name-text">小勇士</div>
+                <div class="player-pts" id="p1-score-text">0 對</div>
+              </div>
+            </div>
+            <div class="player-score-box" id="p2-box" style="display: none;">
+              <span class="player-avatar">👨‍👩‍👧</span>
+              <div>
+                <div class="player-name">家長隊伍</div>
+                <div class="player-pts" id="p2-score-text">0 對</div>
+              </div>
+            </div>
+          </div>
+          <div class="card-grid-board" id="card-board-grid"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 通用浮層提示 -->
+    <div id="global-toast" class="toast-feedback">答對了！太厲害了！</div>
+
+    <!-- 獲勝/過關慶祝彈窗 -->
+    <div id="victory-modal" class="victory-modal">
+      <div class="victory-card">
+        <div style="font-size: 3.6rem; margin-bottom: 8px;" id="victory-emoji">🎉</div>
+        <h2 id="victory-title">太棒了！闖關成功！</h2>
+        <p id="victory-desc">你成功完成了這次的九九乘法大冒險！</p>
+        <div class="modal-btns">
+          <button class="primary-btn" id="btn-modal-replay">再來一局</button>
+          <button class="secondary-btn" id="btn-modal-menu">回主選單</button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- 全螢幕煙火彩紙 Canvas -->
+  <canvas id="confetti-canvas"></canvas>
+
+  <!-- ========================================================================
+       核心邏輯腳本 (自包含無 CORS 問題，在任何電腦、iPad、Android 雙擊即玩)
+       ======================================================================== -->
+  <script>
+    // ------------------------------------------------------------------------
+    // 1. 全局狀態與數字庫
+    // ------------------------------------------------------------------------
+    const state = {
+      // 乘法表預設為 2, 3, 5；支援 2, 3, 4, 5, 6, 7, 8, 9 獨立勾選
+      selectedNumbers: [2, 3, 5],
+      currentView: 'menu',
+      soundEnabled: true
+    };
+
+    // 題目生成輔助器：保證依據使用者勾選的數字出題
+    function getRandomQuestion() {
+      const pool = state.selectedNumbers.length > 0 ? state.selectedNumbers : [2, 3, 5];
+      // 隨機選擇使用者指定的一個乘數 (例如選了 2, 3, 5，則 a 必定是 2, 3, 5 之一)
+      const a = pool[Math.floor(Math.random() * pool.length)];
+      // 被乘數 1 ~ 9
+      const b = Math.floor(Math.random() * 9) + 1;
+      // 隨機反轉前後 a*b 或 b*a，讓孩子雙向熟悉乘法口訣
+      const swap = Math.random() > 0.5;
+      const num1 = swap ? b : a;
+      const num2 = swap ? a : b;
+      return {
+        a: num1,
+        b: num2,
+        ans: num1 * num2,
+        text: `${num1} × ${num2}`
+      };
+    }
+
+    // 生成干擾答案（貼近正確答案、但保證不同，符合兒童認知）
+    function getDistractorAnswers(correctAnswer, count = 2) {
+      const options = new Set([correctAnswer]);
+      let attempts = 0;
+      while (options.size < count + 1 && attempts < 50) {
+        attempts++;
+        const delta = (Math.floor(Math.random() * 5) + 1) * (Math.random() > 0.5 ? 1 : -1);
+        let fake = correctAnswer + delta;
+        if (fake > 0 && fake <= 81 && fake !== correctAnswer) {
+          options.add(fake);
+        }
+      }
+      while (options.size < count + 1) {
+        options.add(correctAnswer + options.size * 2);
+      }
+      return Array.from(options).sort(() => Math.random() - 0.5);
+    }
+
+    // ------------------------------------------------------------------------
+    // 2. Web Audio API 音效引擎 (免外部音訊檔案，iPad/Android 離線即響)
+    // ------------------------------------------------------------------------
+    class SoundEngine {
+      constructor() {
+        this.ctx = null;
+      }
+      init() {
+        if (!this.ctx) {
+          const AudioCtx = window.AudioContext || window.webkitAudioContext;
+          if (AudioCtx) this.ctx = new AudioCtx();
+        }
+        if (this.ctx && this.ctx.state === 'suspended') {
+          this.ctx.resume();
+        }
+      }
+      playPop() {
+        if (!state.soundEnabled) return;
+        this.init();
+        if (!this.ctx) return;
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(360, now);
+        osc.frequency.exponentialRampToValueAtTime(760, now + 0.08);
+        gain.gain.setValueAtTime(0.35, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.08);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.08);
+      }
+      playCorrect() {
+        if (!state.soundEnabled) return;
+        this.init();
+        if (!this.ctx) return;
+        const now = this.ctx.currentTime;
+        const notes = [523.25, 659.25, 783.99, 1046.50];
+        notes.forEach((freq, idx) => {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          const st = now + idx * 0.07;
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(freq, st);
+          gain.gain.setValueAtTime(0.28, st);
+          gain.gain.exponentialRampToValueAtTime(0.001, st + 0.26);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(st);
+          osc.stop(st + 0.27);
+        });
+      }
+      playBoing() {
+        if (!state.soundEnabled) return;
+        this.init();
+        if (!this.ctx) return;
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(280, now);
+        osc.frequency.linearRampToValueAtTime(140, now + 0.15);
+        osc.frequency.linearRampToValueAtTime(230, now + 0.3);
+        gain.gain.setValueAtTime(0.3, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.3);
+      }
+      playSplash() {
+        if (!state.soundEnabled) return;
+        this.init();
+        if (!this.ctx) return;
+        const now = this.ctx.currentTime;
+        const bufferSize = this.ctx.sampleRate * 0.25;
+        const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+        const noise = this.ctx.createBufferSource();
+        noise.buffer = buffer;
+        const filter = this.ctx.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(800, now);
+        filter.frequency.exponentialRampToValueAtTime(200, now + 0.25);
+        const gain = this.ctx.createGain();
+        gain.gain.setValueAtTime(0.35, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+        noise.connect(filter);
+        filter.connect(gain);
+        gain.connect(this.ctx.destination);
+        noise.start(now);
+      }
+      playLaser() {
+        if (!state.soundEnabled) return;
+        this.init();
+        if (!this.ctx) return;
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(900, now);
+        osc.frequency.exponentialRampToValueAtTime(120, now + 0.15);
+        gain.gain.setValueAtTime(0.24, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.15);
+      }
+      playBurp() {
+        if (!state.soundEnabled) return;
+        this.init();
+        if (!this.ctx) return;
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(135, now);
+        osc.frequency.linearRampToValueAtTime(105, now + 0.08);
+        osc.frequency.linearRampToValueAtTime(150, now + 0.18);
+        gain.gain.setValueAtTime(0.35, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.22);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.22);
+      }
+      playFanfare() {
+        if (!state.soundEnabled) return;
+        this.init();
+        if (!this.ctx) return;
+        const now = this.ctx.currentTime;
+        const chords = [523.25, 659.25, 783.99, 1046.50, 1318.51];
+        chords.forEach((freq, idx) => {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          const st = now + idx * 0.1;
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(freq, st);
+          gain.gain.setValueAtTime(0.25, st);
+          gain.gain.exponentialRampToValueAtTime(0.001, st + 0.5);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(st);
+          osc.stop(st + 0.52);
+        });
+      }
+    }
+    const sound = new SoundEngine();
+
+    // ------------------------------------------------------------------------
+    // 3. 煙火彩紙特效 (Confetti) & 彈窗 Toast
+    // ------------------------------------------------------------------------
+    const Confetti = {
+      canvas: null,
+      ctx: null,
+      particles: [],
+      animId: null,
+      init() {
+        this.canvas = document.getElementById('confetti-canvas');
+        if (!this.canvas) return;
+        this.ctx = this.canvas.getContext('2d');
+        this.resize();
+        window.addEventListener('resize', () => this.resize());
+      },
+      resize() {
+        if (!this.canvas) return;
+        this.canvas.width = window.innerWidth;
+        this.canvas.height = window.innerHeight;
+      },
+      burst(count = 65) {
+        if (!this.canvas) return;
+        const colors = ['#F43F5E', '#F59E0B', '#10B981', '#06B6D4', '#8B5CF6', '#EC4899'];
+        for (let i = 0; i < count; i++) {
+          this.particles.push({
+            x: window.innerWidth / 2,
+            y: window.innerHeight / 2 - 80,
+            vx: (Math.random() - 0.5) * 16,
+            vy: (Math.random() - 0.8) * 18,
+            size: Math.random() * 8 + 6,
+            color: colors[Math.floor(Math.random() * colors.length)],
+            rotation: Math.random() * 360,
+            rotSpeed: (Math.random() - 0.5) * 10,
+            alpha: 1
+          });
+        }
+        if (!this.animId) this.loop();
+      },
+      loop() {
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        this.particles.forEach((p, idx) => {
+          p.x += p.vx;
+          p.y += p.vy;
+          p.vy += 0.45;
+          p.rotation += p.rotSpeed;
+          p.alpha -= 0.012;
+          this.ctx.save();
+          this.ctx.globalAlpha = Math.max(0, p.alpha);
+          this.ctx.translate(p.x, p.y);
+          this.ctx.rotate((p.rotation * Math.PI) / 180);
+          this.ctx.fillStyle = p.color;
+          this.ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.7);
+          this.ctx.restore();
+          if (p.alpha <= 0) this.particles.splice(idx, 1);
+        });
+        if (this.particles.length > 0) {
+          this.animId = requestAnimationFrame(() => this.loop());
+        } else {
+          this.animId = null;
+          this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        }
+      }
+    };
+
+    let toastTimer = null;
+    function showToast(msg) {
+      const t = document.getElementById('global-toast');
+      if (!t) return;
+      t.textContent = msg;
+      t.classList.add('show');
+      if (toastTimer) clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => t.classList.remove('show'), 1600);
+    }
+
+    function showVictoryModal(title, desc, emoji = '🎉', onReplay) {
+      sound.playFanfare();
+      Confetti.burst(80);
+      const m = document.getElementById('victory-modal');
+      document.getElementById('victory-title').textContent = title;
+      document.getElementById('victory-desc').textContent = desc;
+      document.getElementById('victory-emoji').textContent = emoji;
+      m.style.display = 'flex';
+
+      document.getElementById('btn-modal-replay').onclick = () => {
+        m.style.display = 'none';
+        if (onReplay) onReplay();
+      };
+      document.getElementById('btn-modal-menu').onclick = () => {
+        m.style.display = 'none';
+        navigateTo('menu');
+      };
+    }
+
+    // ------------------------------------------------------------------------
+    // 4. 路由與畫面導航
+    // ------------------------------------------------------------------------
+    let activeGame = null;
+
+    function navigateTo(viewName) {
+      sound.playPop();
+      document.getElementById('victory-modal').style.display = 'none';
+
+      if (activeGame && activeGame.cleanup) {
+        activeGame.cleanup();
+      }
+
+      state.currentView = viewName;
+      document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+
+      const target = document.getElementById(`view-${viewName}`);
+      if (target) target.classList.add('active');
+
+      const backBtn = document.getElementById('btn-back-home');
+      if (viewName === 'menu') {
+        backBtn.style.display = 'none';
+        activeGame = null;
+      } else {
+        backBtn.style.display = 'flex';
+        if (viewName === 'monster') { activeGame = GameMonster; GameMonster.start(); }
+        else if (viewName === 'frog') { activeGame = GameFrog; GameFrog.start(); }
+        else if (viewName === 'potion') { activeGame = GamePotion; GamePotion.start(); }
+        else if (viewName === 'space') { activeGame = GameSpace; GameSpace.start(); }
+        else if (viewName === 'cards') { activeGame = GameCards; GameCards.start(); }
+      }
+    }
+
+    // ------------------------------------------------------------------------
+    // 5. 數字選擇器 (2, 3, ... 9 獨立勾選)
+    // ------------------------------------------------------------------------
+    function updateSelectedNumbersBadge() {
+      const sorted = [...state.selectedNumbers].sort((a,b)=>a-b);
+      document.getElementById('header-nums-text').textContent = sorted.join(', ') || '未選擇';
+    }
+
+    function renderNumberSelector() {
+      const grid = document.getElementById('num-selector-grid');
+      grid.innerHTML = '';
+
+      // 支援 2, 3, 4, 5, 6, 7, 8, 9 獨立選擇
+      const validNumbers = [2, 3, 4, 5, 6, 7, 8, 9];
+
+      validNumbers.forEach(num => {
+        const isSelected = state.selectedNumbers.includes(num);
+        const pill = document.createElement('div');
+        pill.className = `num-pill ${isSelected ? 'selected' : ''}`;
+        pill.innerHTML = `
+          <div class="num-pill-check">✓</div>
+          <div class="num-pill-val">${num}</div>
+          <div class="num-pill-sub">${num}的表</div>
+        `;
+
+        pill.addEventListener('click', (e) => {
+          e.stopPropagation();
+          sound.playPop();
+
+          if (state.selectedNumbers.includes(num)) {
+            if (state.selectedNumbers.length > 1) {
+              state.selectedNumbers = state.selectedNumbers.filter(n => n !== num);
+              pill.classList.remove('selected');
+            } else {
+              showToast('請至少保留 1 個數字練習喔！');
+            }
+          } else {
+            state.selectedNumbers.push(num);
+            pill.classList.add('selected');
+          }
+          updateSelectedNumbersBadge();
+        });
+
+        grid.appendChild(pill);
+      });
+
+      updateSelectedNumbersBadge();
+    }
+
+    // ------------------------------------------------------------------------
+    // 6. 遊戲 1: 貪吃怪獸餵食秀 (Monster Feeding)
+    // ------------------------------------------------------------------------
+    const GameMonster = {
+      score: 0,
+      targetScore: 5,
+      currentQ: null,
+      foodIcons: ['🍩', '🍔', '🍕', '🍰', '🥞', '🍪'],
+
+      start() {
+        this.score = 0;
+        this.updateProgress();
+        this.nextQuestion();
+      },
+
+      nextQuestion() {
+        this.currentQ = getRandomQuestion();
+        document.getElementById('monster-bubble').textContent = `我要吃 ${this.currentQ.text} ！`;
+
+        const answers = getDistractorAnswers(this.currentQ.ans, 2);
+        const shelf = document.getElementById('monster-food-shelf');
+        shelf.innerHTML = '';
+
+        answers.forEach((ans, idx) => {
+          const item = document.createElement('div');
+          item.className = 'food-item';
+          item.dataset.val = ans;
+          const icon = this.foodIcons[idx % this.foodIcons.length];
+          item.innerHTML = `
+            <div class="food-icon">${icon}</div>
+            <div class="food-val">${ans}</div>
+          `;
+          this.bindDragAndClick(item);
+          shelf.appendChild(item);
+        });
+      },
+
+      bindDragAndClick(el) {
+        let isDragging = false;
+        let hasMoved = false;
+        let startX = 0, startY = 0;
+
+        const mouthDropZone = document.getElementById('monster-mouth-drop-zone');
+        const mouthEl = document.getElementById('monster-mouth');
+        const tongueEl = document.getElementById('monster-tongue');
+
+        const onPointerDown = (e) => {
+          e.preventDefault();
+          sound.playPop();
+          isDragging = true;
+          hasMoved = false;
+          startX = e.clientX;
+          startY = e.clientY;
+
+          el.classList.add('dragging');
+          el.style.left = `${e.clientX}px`;
+          el.style.top = `${e.clientY}px`;
+
+          window.addEventListener('pointermove', onPointerMove);
+          window.addEventListener('pointerup', onPointerUp);
+          window.addEventListener('pointercancel', onPointerUp);
+        };
+
+        const onPointerMove = (e) => {
+          if (!isDragging) return;
+          if (Math.hypot(e.clientX - startX, e.clientY - startY) > 8) hasMoved = true;
+          el.style.left = `${e.clientX}px`;
+          el.style.top = `${e.clientY}px`;
+
+          const mouthRect = mouthDropZone.getBoundingClientRect();
+          const dist = Math.hypot(e.clientX - (mouthRect.left + mouthRect.width/2), e.clientY - (mouthRect.top + mouthRect.height/2));
+          if (dist < 90) {
+            mouthEl.setAttribute('ry', '34');
+            mouthEl.setAttribute('fill', '#500724');
+            tongueEl.setAttribute('cy', '150');
+          } else {
+            mouthEl.setAttribute('ry', '26');
+            mouthEl.setAttribute('fill', '#831843');
+            tongueEl.setAttribute('cy', '142');
+          }
+        };
+
+        const onPointerUp = (e) => {
+          if (!isDragging) return;
+          isDragging = false;
+          el.classList.remove('dragging');
+          el.style.left = '';
+          el.style.top = '';
+
+          window.removeEventListener('pointermove', onPointerMove);
+          window.removeEventListener('pointerup', onPointerUp);
+          window.removeEventListener('pointercancel', onPointerUp);
+
+          mouthEl.setAttribute('ry', '26');
+          mouthEl.setAttribute('fill', '#831843');
+          tongueEl.setAttribute('cy', '142');
+
+          const foodVal = parseInt(el.dataset.val, 10);
+          if (!hasMoved) {
+            this.handleDirectFeed(el, foodVal);
+            return;
+          }
+
+          const mouthRect = mouthDropZone.getBoundingClientRect();
+          const dist = Math.hypot(e.clientX - (mouthRect.left + mouthRect.width/2), e.clientY - (mouthRect.top + mouthRect.height/2));
+          if (dist < 110) {
+            if (foodVal === this.currentQ.ans) this.onEatSuccess(el);
+            else this.onEatWrong(el);
+          }
+        };
+
+        el.addEventListener('pointerdown', onPointerDown);
+      },
+
+      handleDirectFeed(el, foodVal) {
+        const mouthDropZone = document.getElementById('monster-mouth-drop-zone');
+        if (foodVal === this.currentQ.ans) {
+          el.style.transition = 'all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1)';
+          const mouthRect = mouthDropZone.getBoundingClientRect();
+          const elRect = el.getBoundingClientRect();
+          const dx = (mouthRect.left + mouthRect.width/2) - (elRect.left + elRect.width/2);
+          const dy = (mouthRect.top + mouthRect.height/2) - (elRect.top + elRect.height/2);
+          el.style.transform = `translate(${dx}px, ${dy}px) scale(0.6)`;
+          setTimeout(() => this.onEatSuccess(el), 350);
+        } else {
+          this.onEatWrong(el);
+        }
+      },
+
+      onEatSuccess(el) {
+        sound.playBurp();
+        showToast('嗝～ 好吃！答對了！❤️');
+        Confetti.burst(35);
+        document.getElementById('monster-bubble').textContent = '嗝～ 肚子好滿足！😋';
+
+        el.style.transform = 'scale(0)';
+        setTimeout(() => el.remove(), 200);
+
+        this.score++;
+        this.updateProgress();
+
+        if (this.score >= this.targetScore) {
+          setTimeout(() => {
+            showVictoryModal('怪獸吃得超級飽！', '太厲害了！你成功餵飽怪獸，全部題目都答對了！', '👾', () => this.start());
+          }, 600);
+        } else {
+          setTimeout(() => this.nextQuestion(), 1100);
+        }
+      },
+
+      onEatWrong(el) {
+        sound.playBoing();
+        showToast('咦？怪獸歪頭：好像不是這個味道喔！🤔');
+        el.style.transition = 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)';
+        el.style.transform = 'scale(1.2) rotate(15deg)';
+        setTimeout(() => { el.style.transform = 'scale(1)'; }, 300);
+        document.getElementById('monster-bubble').textContent = `這不是 ${this.currentQ.text} 啦～ 再試試看！`;
+      },
+
+      updateProgress() {
+        document.getElementById('monster-score-text').textContent = `已吃飽：${this.score} / ${this.targetScore}`;
+        const pct = Math.round((this.score / this.targetScore) * 100);
+        document.getElementById('monster-progress-fill').style.width = `${pct}%`;
+        document.getElementById('monster-progress-text').textContent = `飽足感 ${pct}%`;
+      },
+
+      cleanup() {}
+    };
+
+    // ------------------------------------------------------------------------
+    // 7. 遊戲 2: 叢林跳跳蛙 (Jungle Frog Jump)
+    // ------------------------------------------------------------------------
+    const GameFrog = {
+      step: 1,
+      totalSteps: 5,
+      streak: 0,
+      currentQ: null,
+
+      start() {
+        this.step = 1;
+        this.streak = 0;
+        this.updateStepDisplay();
+        this.renderStep();
+      },
+
+      updateStepDisplay() {
+        document.getElementById('frog-step-badge').textContent = `進度：第 ${this.step} / ${this.totalSteps} 步`;
+      },
+
+      renderStep() {
+        this.currentQ = getRandomQuestion();
+        document.getElementById('frog-eq-text').textContent = `${this.currentQ.text} = ?`;
+
+        const container = document.getElementById('frog-pads-container');
+        container.innerHTML = '';
+
+        const answers = getDistractorAnswers(this.currentQ.ans, 2);
+        answers.forEach(ans => {
+          const pad = document.createElement('button');
+          pad.className = 'lilypad-btn';
+          pad.textContent = ans;
+          pad.addEventListener('click', () => this.handleChoice(ans, pad));
+          container.appendChild(pad);
+        });
+
+        const frog = document.getElementById('frog-hero');
+        frog.style.transform = 'translateX(-50%)';
+      },
+
+      handleChoice(selectedAns, padEl) {
+        const frog = document.getElementById('frog-hero');
+        const padRect = padEl.getBoundingClientRect();
+        const startBank = document.querySelector('.frog-start-bank');
+        const bankRect = startBank ? startBank.getBoundingClientRect() : frog.getBoundingClientRect();
+
+        const frogCenterX = bankRect.left + bankRect.width / 2;
+        const frogCenterY = bankRect.bottom - 45;
+        const targetCenterX = padRect.left + padRect.width / 2;
+        const targetCenterY = padRect.top + padRect.height / 2;
+
+        const dx = targetCenterX - frogCenterX;
+        const dy = targetCenterY - frogCenterY;
+
+        if (selectedAns === this.currentQ.ans) {
+          sound.playCorrect();
+          this.streak++;
+          frog.classList.add('jumping');
+          frog.style.transform = `translate(calc(-50% + ${dx}px), ${dy}px) scale(1.15)`;
+
+          let stepJump = 1;
+          if (this.streak >= 3) {
+            stepJump = 2;
+            const banner = document.getElementById('frog-rainbow-banner');
+            banner.textContent = `🌈 連對 3 題！啟動彩虹加速，一次跳過兩格！`;
+            banner.style.display = 'block';
+            showToast('🌈 彩虹衝刺！一次跳兩格！');
+            frog.style.filter = 'drop-shadow(0 0 16px #FDE047)';
+            setTimeout(() => {
+              banner.style.display = 'none';
+              frog.style.filter = '';
+            }, 1800);
+          }
+
+          setTimeout(() => {
+            frog.classList.remove('jumping');
+            frog.style.transform = 'translateX(-50%)';
+            this.step += stepJump;
+            if (this.step > this.totalSteps) {
+              showVictoryModal('到達寶藏終點！', '太帥了！小青蛙成功渡河拿到了國王皇冠與寶藏箱！👑', '🐸', () => this.start());
+            } else {
+              this.updateStepDisplay();
+              this.renderStep();
+            }
+          }, 650);
+
+        } else {
+          sound.playSplash();
+          this.streak = 0;
+          padEl.classList.add('sink');
+          frog.classList.add('jumping');
+          frog.style.transform = `translate(calc(-50% + ${dx}px), ${dy + 15}px) scale(0.85)`;
+          showToast('撲通！落水了，小青蛙游回來再試一次～ 🏊');
+
+          setTimeout(() => {
+            frog.classList.remove('jumping');
+            frog.style.transform = 'translateX(-50%)';
+            padEl.classList.remove('sink');
+          }, 800);
+        }
+      },
+
+      cleanup() {}
+    };
+
+    // ------------------------------------------------------------------------
+    // 8. 遊戲 3: 魔法藥水調配師 (Magic Potion)
+    // ------------------------------------------------------------------------
+    const GamePotion = {
+      completedCount: 0,
+      targetGoal: 5,
+      targetProduct: 24,
+      selectedBottles: [],
+      potionIcons: ['💧', '🌿', '🍓', '💎', '🍄', '✨', '🍃', '🐉', '🔮'],
+      customers: [
+        { name: '森林精靈露露', icon: '🧝‍♀️' },
+        { name: '魔法貓咪米米', icon: '🐱' },
+        { name: '智慧貓頭鷹博士', icon: '🦉' },
+        { name: '噴火小萌龍波波', icon: '🐲' },
+        { name: '狐狸鍊金術士', icon: '🦊' }
+      ],
+
+      start() {
+        this.completedCount = 0;
+        this.selectedBottles = [];
+        this.updateBadge();
+        this.nextOrder();
+      },
+
+      updateBadge() {
+        document.getElementById('potion-score-badge').textContent = `已調配：${this.completedCount} / ${this.targetGoal} 瓶`;
+      },
+
+      nextOrder() {
+        this.selectedBottles = [];
+        const customer = this.customers[this.completedCount % this.customers.length];
+        document.getElementById('potion-customer-icon').textContent = customer.icon;
+
+        const pool = state.selectedNumbers.length > 0 ? state.selectedNumbers : [2, 3, 5];
+        const factorA = pool[Math.floor(Math.random() * pool.length)];
+        const factorB = Math.floor(Math.random() * 9) + 1;
+        this.targetProduct = factorA * factorB;
+
+        document.getElementById('potion-target-val').textContent = `能量 ${this.targetProduct}`;
+        document.getElementById('cauldron-status-hint').textContent = `點選下方 2 個材料，相乘等於 ${this.targetProduct}`;
+        document.getElementById('cauldron-smoke-emoji').style.opacity = '0';
+
+        this.renderBottles();
+      },
+
+      renderBottles() {
+        const shelf = document.getElementById('potion-bottles-shelf');
+        shelf.innerHTML = '';
+        for (let i = 1; i <= 9; i++) {
+          const bottle = document.createElement('div');
+          bottle.className = 'bottle-item';
+          bottle.dataset.num = i;
+          bottle.innerHTML = `
+            <div class="bottle-icon">${this.potionIcons[i - 1]}</div>
+            <div class="bottle-num">${i}</div>
+          `;
+          bottle.addEventListener('click', () => this.handleBottleClick(i, bottle));
+          shelf.appendChild(bottle);
+        }
+      },
+
+      handleBottleClick(num, bottleEl) {
+        sound.playPop();
+        const idx = this.selectedBottles.indexOf(num);
+        if (idx >= 0) {
+          this.selectedBottles.splice(idx, 1);
+          bottleEl.classList.remove('selected');
+        } else {
+          if (this.selectedBottles.length < 2) {
+            this.selectedBottles.push(num);
+            bottleEl.classList.add('selected');
+          }
+        }
+
+        if (this.selectedBottles.length === 2) {
+          const [n1, n2] = this.selectedBottles;
+          const currentProd = n1 * n2;
+
+          if (currentProd === this.targetProduct) {
+            sound.playCorrect();
+            Confetti.burst(40);
+            const smoke = document.getElementById('cauldron-smoke-emoji');
+            smoke.textContent = '🌟💖✨';
+            smoke.style.opacity = '1';
+            showToast(`太棒了！${n1} × ${n2} = ${this.targetProduct}，調配成功！`);
+
+            this.completedCount++;
+            this.updateBadge();
+
+            setTimeout(() => {
+              if (this.completedCount >= this.targetGoal) {
+                showVictoryModal('五星級魔藥大師！', '太棒了！你成功為所有森林夥伴調配出了完美藥水！🧪✨', '✨', () => this.start());
+              } else {
+                this.nextOrder();
+              }
+            }, 1200);
+
+          } else {
+            sound.playBoing();
+            const smoke = document.getElementById('cauldron-smoke-emoji');
+            smoke.textContent = '💨';
+            smoke.style.opacity = '1';
+            document.getElementById('cauldron-status-hint').textContent = `目前能量是 ${n1} × ${n2} = ${currentProd} 喔，再試試！`;
+            showToast(`目前的能量是 ${currentProd} 喔，再試試看！`);
+
+            setTimeout(() => {
+              smoke.style.opacity = '0';
+              this.selectedBottles = [];
+              document.querySelectorAll('.bottle-item').forEach(b => b.classList.remove('selected'));
+            }, 1200);
+          }
+        }
+      },
+
+      cleanup() {}
+    };
+
+    // ------------------------------------------------------------------------
+    // 9. 遊戲 4: 太空隕石防衛戰 (Space Defense)
+    // ------------------------------------------------------------------------
+    const GameSpace = {
+      mode: 'relax',
+      score: 0,
+      combo: 0,
+      timeLeft: 60,
+      currentQ: null,
+      meteorY: 10,
+      speed: 0.35,
+      animFrame: null,
+      timerInterval: null,
+
+      start() {
+        this.score = 0;
+        this.combo = 0;
+        this.timeLeft = 60;
+        this.updateScoreDisplay();
+        this.setupModes();
+        this.nextMeteor();
+        this.startLoop();
+      },
+
+      setupModes() {
+        const relaxBtn = document.getElementById('tab-mode-relax');
+        const heroBtn = document.getElementById('tab-mode-hero');
+
+        relaxBtn.onclick = () => {
+          sound.playPop();
+          this.mode = 'relax';
+          this.combo = 0;
+          relaxBtn.classList.add('active');
+          heroBtn.classList.remove('active');
+          if (this.timerInterval) clearInterval(this.timerInterval);
+          this.updateScoreDisplay();
+          this.nextMeteor();
+        };
+
+        heroBtn.onclick = () => {
+          sound.playPop();
+          this.mode = 'hero';
+          this.score = 0;
+          this.combo = 0;
+          this.timeLeft = 60;
+          heroBtn.classList.add('active');
+          relaxBtn.classList.remove('active');
+          this.updateScoreDisplay();
+
+          if (this.timerInterval) clearInterval(this.timerInterval);
+          this.timerInterval = setInterval(() => {
+            this.timeLeft--;
+            this.updateScoreDisplay();
+            if (this.timeLeft <= 0) {
+              clearInterval(this.timerInterval);
+              showVictoryModal('防衛戰時間到！', `太帥了！你在小小英雄模式獲得了 ${this.score} 分！🚀`, '🏆', () => this.start());
+            }
+          }, 1000);
+
+          this.nextMeteor();
+        };
+      },
+
+      updateScoreDisplay() {
+        const badge = document.getElementById('space-score-badge');
+        if (this.mode === 'hero') {
+          const comboText = this.combo > 1 ? ` (連擊 x${this.combo}🔥)` : '';
+          badge.textContent = `倒數：${this.timeLeft}s | 得分：${this.score}${comboText}`;
+        } else {
+          badge.textContent = `得分：${this.score} (悠閒練習)`;
+        }
+      },
+
+      nextMeteor() {
+        this.currentQ = getRandomQuestion();
+        this.meteorY = 10;
+        const meteorEl = document.getElementById('space-meteor');
+        meteorEl.style.top = `${this.meteorY}px`;
+        document.getElementById('space-meteor-eq').textContent = this.currentQ.text;
+        this.speed = this.mode === 'hero' ? 0.9 : 0.35;
+
+        const answers = getDistractorAnswers(this.currentQ.ans, 3);
+        const container = document.getElementById('space-turrets-container');
+        container.innerHTML = '';
+
+        answers.forEach(ans => {
+          const btn = document.createElement('button');
+          btn.className = 'turret-btn';
+          btn.innerHTML = `
+            <div class="turret-icon">🛰️</div>
+            <div class="turret-answer">${ans}</div>
+          `;
+          btn.addEventListener('click', () => this.fireTurret(ans, btn));
+          container.appendChild(btn);
+        });
+      },
+
+      fireTurret(chosenAns, btnEl) {
+        const meteorEl = document.getElementById('space-meteor');
+        const canvas = document.getElementById('laser-canvas');
+        const stage = document.getElementById('space-stage');
+        canvas.width = stage.clientWidth;
+        canvas.height = stage.clientHeight;
+        const ctx = canvas.getContext('2d');
+
+        const btnRect = btnEl.getBoundingClientRect();
+        const stageRect = stage.getBoundingClientRect();
+        const startX = btnRect.left + btnRect.width / 2 - stageRect.left;
+        const startY = btnRect.top - stageRect.top;
+
+        const meteorRect = meteorEl.getBoundingClientRect();
+        const targetX = meteorRect.left + meteorRect.width / 2 - stageRect.left;
+        const targetY = meteorRect.top + meteorRect.height / 2 - stageRect.top;
+
+        if (chosenAns === this.currentQ.ans) {
+          sound.playLaser();
+          this.drawLaser(ctx, startX, startY, targetX, targetY, true);
+
+          setTimeout(() => {
+            sound.playCorrect();
+            Confetti.burst(30);
+
+            if (this.mode === 'hero') {
+              this.combo++;
+              const comboBonus = this.combo > 1 ? this.combo * 50 : 0;
+              this.score += 100 + comboBonus;
+              showToast(`💥 擊碎！${this.combo > 1 ? `連擊 x${this.combo}！+${100 + comboBonus}分` : '+100分'}`);
+            } else {
+              this.score += 100;
+              showToast('💥 擊碎隕石！PERFECT！');
+            }
+
+            this.updateScoreDisplay();
+            this.nextMeteor();
+          }, 150);
+
+        } else {
+          sound.playBoing();
+          this.combo = 0;
+          this.updateScoreDisplay();
+          this.drawLaser(ctx, startX, startY, startX, startY - 70, false);
+          showToast('能量頻率不符，再看一次題目算式！');
+        }
+      },
+
+      drawLaser(ctx, x1, y1, x2, y2, hit) {
+        ctx.save();
+        ctx.strokeStyle = hit ? '#38BDF8' : '#F43F5E';
+        ctx.lineWidth = hit ? 7 : 4;
+        ctx.shadowBlur = 18;
+        ctx.shadowColor = hit ? '#0284C7' : '#E11D48';
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
+        ctx.restore();
+
+        setTimeout(() => ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height), 130);
+      },
+
+      startLoop() {
+        if (this.animFrame) cancelAnimationFrame(this.animFrame);
+        const loop = () => {
+          const meteorEl = document.getElementById('space-meteor');
+          const field = document.getElementById('space-field');
+          if (meteorEl && field) {
+            const maxY = field.clientHeight - 90;
+            this.meteorY += this.speed;
+            if (this.meteorY >= maxY) {
+              this.meteorY = 10;
+              this.combo = 0;
+              this.updateScoreDisplay();
+              showToast(`護盾抵擋了！答案是 ${this.currentQ.ans}，記住了嗎？`);
+              this.nextMeteor();
+            }
+            meteorEl.style.top = `${this.meteorY}px`;
+          }
+          this.animFrame = requestAnimationFrame(loop);
+        };
+        loop();
+      },
+
+      cleanup() {
+        if (this.animFrame) cancelAnimationFrame(this.animFrame);
+        if (this.timerInterval) clearInterval(this.timerInterval);
+      }
+    };
+
+    // ------------------------------------------------------------------------
+    // 10. 遊戲 5: 親子翻翻樂對決 (Card Matching)
+    // ------------------------------------------------------------------------
+    const GameCards = {
+      isTwoPlayer: false,
+      totalCards: 12,
+      turn: 1,
+      scores: { p1: 0, p2: 0 },
+      firstCard: null,
+      secondCard: null,
+      lockBoard: false,
+
+      start() {
+        this.scores = { p1: 0, p2: 0 };
+        this.turn = 1;
+        this.firstCard = null;
+        this.secondCard = null;
+        this.lockBoard = false;
+        this.setupControls();
+        this.updateDashboard();
+        this.dealCards();
+      },
+
+      setupControls() {
+        const p1Btn = document.getElementById('tab-card-p1');
+        const p2Btn = document.getElementById('tab-card-p2');
+        const countBtn = document.getElementById('tab-card-count');
+        const restartBtn = document.getElementById('btn-card-restart');
+
+        p1Btn.onclick = () => {
+          sound.playPop();
+          this.isTwoPlayer = false;
+          p1Btn.classList.add('active');
+          p2Btn.classList.remove('active');
+          document.getElementById('p2-box').style.display = 'none';
+          document.getElementById('p1-name-text').textContent = '小勇士';
+          this.start();
+        };
+
+        p2Btn.onclick = () => {
+          sound.playPop();
+          this.isTwoPlayer = true;
+          p2Btn.classList.add('active');
+          p1Btn.classList.remove('active');
+          document.getElementById('p2-box').style.display = 'flex';
+          document.getElementById('p1-name-text').textContent = '藍方寶貝';
+          this.start();
+        };
+
+        countBtn.onclick = () => {
+          sound.playPop();
+          this.totalCards = this.totalCards === 12 ? 16 : 12;
+          countBtn.textContent = `${this.totalCards} 張卡牌`;
+          this.start();
+        };
+
+        restartBtn.onclick = () => {
+          sound.playPop();
+          this.dealCards();
+        };
+      },
+
+      updateDashboard() {
+        document.getElementById('p1-score-text').textContent = `${this.scores.p1} 對`;
+        document.getElementById('p2-score-text').textContent = `${this.scores.p2} 對`;
+        const p1Box = document.getElementById('p1-box');
+        const p2Box = document.getElementById('p2-box');
+
+        if (this.turn === 1) {
+          p1Box.classList.add('active-turn');
+          p2Box.classList.remove('active-turn');
+        } else {
+          p2Box.classList.add('active-turn');
+          p1Box.classList.remove('active-turn');
+        }
+      },
+
+      dealCards() {
+        this.firstCard = null;
+        this.secondCard = null;
+        this.lockBoard = false;
+
+        const pairCount = this.totalCards / 2;
+        const pairs = [];
+        const pool = state.selectedNumbers.length > 0 ? state.selectedNumbers : [2, 3, 5];
+
+        while (pairs.length < pairCount) {
+          const a = pool[Math.floor(Math.random() * pool.length)];
+          const b = Math.floor(Math.random() * 9) + 1;
+          const ans = a * b;
+          const key = `${a}x${b}`;
+          if (!pairs.some(p => p.key === key)) {
+            pairs.push({ key, equation: `${a} × ${b}`, ans: `${ans}` });
+          }
+        }
+
+        let deck = [];
+        pairs.forEach((p, idx) => {
+          deck.push({ id: idx, pairId: idx, text: p.equation, type: 'eq' });
+          deck.push({ id: idx + 100, pairId: idx, text: p.ans, type: 'ans' });
+        });
+
+        deck.sort(() => Math.random() - 0.5);
+
+        const grid = document.getElementById('card-board-grid');
+        grid.innerHTML = '';
+
+        deck.forEach(cardData => {
+          const card = document.createElement('div');
+          card.className = 'flip-card';
+          card.dataset.pairId = cardData.pairId;
+          card.innerHTML = `
+            <div class="card-back">❓</div>
+            <div class="card-front">${cardData.text}</div>
+          `;
+          card.addEventListener('click', () => this.handleCardFlip(card));
+          grid.appendChild(card);
+        });
+      },
+
+      handleCardFlip(card) {
+        if (this.lockBoard || card.classList.contains('flipped') || card.classList.contains('matched')) return;
+        sound.playPop();
+        card.classList.add('flipped');
+
+        if (!this.firstCard) {
+          this.firstCard = card;
+        } else {
+          this.secondCard = card;
+          this.lockBoard = true;
+          this.checkMatch();
+        }
+      },
+
+      checkMatch() {
+        const id1 = this.firstCard.dataset.pairId;
+        const id2 = this.secondCard.dataset.pairId;
+
+        if (id1 === id2) {
+          sound.playCorrect();
+          showToast('配對成功！🎉');
+          Confetti.burst(32);
+
+          if (this.turn === 1) this.scores.p1++;
+          else this.scores.p2++;
+          this.updateDashboard();
+
+          setTimeout(() => {
+            this.firstCard.classList.add('matched');
+            this.secondCard.classList.add('matched');
+            this.resetTurn(true);
+            this.checkGameOver();
+          }, 500);
+
+        } else {
+          sound.playBoing();
+          setTimeout(() => {
+            this.firstCard.classList.remove('flipped');
+            this.secondCard.classList.remove('flipped');
+            if (this.isTwoPlayer) {
+              this.turn = this.turn === 1 ? 2 : 1;
+              this.updateDashboard();
+            }
+            this.resetTurn(false);
+          }, 1100);
+        }
+      },
+
+      resetTurn(keepTurn) {
+        this.firstCard = null;
+        this.secondCard = null;
+        this.lockBoard = false;
+      },
+
+      checkGameOver() {
+        const matched = document.querySelectorAll('.flip-card.matched').length;
+        if (matched === this.totalCards) {
+          let desc = `恭喜完成了全部 ${this.totalCards / 2} 組乘法配對！`;
+          if (this.isTwoPlayer) {
+            if (this.scores.p1 > this.scores.p2) desc = `藍方寶貝獲勝！(${this.scores.p1} 對 vs ${this.scores.p2} 對)`;
+            else if (this.scores.p2 > this.scores.p1) desc = `家長隊伍獲勝！(${this.scores.p2} 對 vs ${this.scores.p1} 對)`;
+            else desc = `平手！雙方都記得很熟練喔！(${this.scores.p1} 對)`;
+          }
+          showVictoryModal('卡牌配對大勝利！', desc, '🃏', () => this.start());
+        }
+      },
+
+      cleanup() {}
+    };
+
+    // ------------------------------------------------------------------------
+    // 11. 初始化與事件綁定
+    // ------------------------------------------------------------------------
+    window.addEventListener('DOMContentLoaded', () => {
+      Confetti.init();
+      renderNumberSelector();
+
+      // 返回主選單按鈕
+      document.getElementById('btn-back-home').addEventListener('click', () => {
+        navigateTo('menu');
+      });
+
+      // 音效切換開關
+      document.getElementById('btn-toggle-sound').addEventListener('click', () => {
+        state.soundEnabled = !state.soundEnabled;
+        document.getElementById('sound-icon').textContent = state.soundEnabled ? '🔊' : '🔇';
+        if (state.soundEnabled) sound.playPop();
+      });
+
+      // 數字預設值按鈕
+      document.getElementById('btn-preset-all').addEventListener('click', () => {
+        sound.playPop();
+        state.selectedNumbers = [2, 3, 4, 5, 6, 7, 8, 9];
+        renderNumberSelector();
+      });
+
+      document.getElementById('btn-preset-basic').addEventListener('click', () => {
+        sound.playPop();
+        state.selectedNumbers = [2, 3, 5];
+        renderNumberSelector();
+      });
+
+      document.getElementById('btn-preset-adv').addEventListener('click', () => {
+        sound.playPop();
+        state.selectedNumbers = [6, 7, 8, 9];
+        renderNumberSelector();
+      });
+
+      // 5 大遊戲卡片點擊監聽 (點擊任何卡片立即進入遊戲)
+      const gameCards = [
+        { id: 'card-monster', view: 'monster' },
+        { id: 'card-frog', view: 'frog' },
+        { id: 'card-potion', view: 'potion' },
+        { id: 'card-space', view: 'space' },
+        { id: 'card-cards', view: 'cards' }
+      ];
+
+      gameCards.forEach(item => {
+        const cardEl = document.getElementById(item.id);
+        if (cardEl) {
+          cardEl.addEventListener('click', (e) => {
+            e.preventDefault();
+            navigateTo(item.view);
+          });
+        }
+      });
+
+      // iOS / iPadOS Safari & Android 首次觸摸時解鎖音效 Context
+      window.addEventListener('pointerdown', () => {
+        sound.init();
+      }, { once: true });
+    });
+  </script>
+</body>
+</html>
