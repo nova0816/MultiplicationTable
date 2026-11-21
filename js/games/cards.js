@@ -106,15 +106,16 @@ export const GameCards = {
         pairs.push({
           key,
           equation: `${num1} × ${num2}`,
-          ans: `${ans}`
+          ans: `${ans}`,
+          val: ans
         });
       }
     }
 
     let deck = [];
     pairs.forEach((p, idx) => {
-      deck.push({ id: idx, pairId: idx, text: p.equation, type: 'eq' });
-      deck.push({ id: idx + 100, pairId: idx, text: p.ans, type: 'ans' });
+      deck.push({ id: idx, val: p.val, text: p.equation, type: 'eq' });
+      deck.push({ id: idx + 100, val: p.val, text: p.ans, type: 'ans' });
     });
 
     // 隨機洗牌
@@ -128,7 +129,8 @@ export const GameCards = {
     deck.forEach(cardData => {
       const card = document.createElement('div');
       card.className = 'flip-card';
-      card.dataset.pairId = cardData.pairId;
+      card.dataset.val = cardData.val;
+      card.dataset.type = cardData.type;
       card.innerHTML = `
         <div class="card-back">❓</div>
         <div class="card-front">${cardData.text}</div>
@@ -144,6 +146,7 @@ export const GameCards = {
 
   handleCardFlip(card) {
     if (this.lockBoard || card.classList.contains('flipped') || card.classList.contains('matched')) return;
+    if (this.firstCard === card) return;
 
     sound.playPop();
     card.classList.add('flipped');
@@ -158,12 +161,24 @@ export const GameCards = {
   },
 
   checkMatch() {
-    const id1 = this.firstCard.dataset.pairId;
-    const id2 = this.secondCard.dataset.pairId;
+    const val1 = parseInt(this.firstCard.dataset.val, 10);
+    const val2 = parseInt(this.secondCard.dataset.val, 10);
 
-    if (id1 === id2) {
+    // 只要兩張卡牌計算或表示的數值相同即判定配對成功 (例如 3x4 與任意 12 均可配對)
+    if (val1 === val2) {
       sound.playCorrect();
-      showToast('配對成功！🎉');
+
+      const t1 = this.firstCard.querySelector('.card-front').textContent.trim();
+      const t2 = this.secondCard.querySelector('.card-front').textContent.trim();
+      let matchMsg = `配對成功！答案是 ${val1} 🎉`;
+      if (t1.includes('×') && !t2.includes('×')) {
+        matchMsg = `配對成功！${t1} = ${t2} 🎉`;
+      } else if (!t1.includes('×') && t2.includes('×')) {
+        matchMsg = `配對成功！${t2} = ${t1} 🎉`;
+      } else if (t1.includes('×') && t2.includes('×')) {
+        matchMsg = `配對成功！${t1} 與 ${t2} 都是 ${val1} 🎉`;
+      }
+      showToast(matchMsg);
       Confetti.burst(32);
 
       if (this.turn === 1) this.scores.p1++;
