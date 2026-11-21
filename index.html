@@ -1516,17 +1516,24 @@
       soundEnabled: true
     };
 
-    // 題目生成輔助器：保證依據使用者勾選的數字出題
+    // 題目生成輔助器：保證依據使用者勾選的數字出題，被乘數固定放前面
+    // 特別規則：若選到 2 的乘法，2 必定放最前面（只能 2 × 7，不能 7 × 2）
     function getRandomQuestion() {
       const pool = state.selectedNumbers.length > 0 ? state.selectedNumbers : [2, 3, 5];
-      // 隨機選擇使用者指定的一個乘數 (例如選了 2, 3, 5，則 a 必定是 2, 3, 5 之一)
+      // 隨機選擇使用者指定的一個乘法表數字
       const a = pool[Math.floor(Math.random() * pool.length)];
-      // 被乘數 1 ~ 9
+      // 乘數 1 ~ 9
       const b = Math.floor(Math.random() * 9) + 1;
-      // 隨機反轉前後 a*b 或 b*a，讓孩子雙向熟悉乘法口訣
-      const swap = Math.random() > 0.5;
-      const num1 = swap ? b : a;
-      const num2 = swap ? a : b;
+
+      let num1 = a;
+      let num2 = b;
+
+      // 若有選到 2 的乘法，且算式中出現 2，保證 2 必定放最前面 (例如只能 2 × 7，不能 7 × 2)
+      if ((num2 === 2 || num1 === 2) && state.selectedNumbers.includes(2)) {
+        num1 = 2;
+        num2 = (a === 2 ? b : a);
+      }
+
       return {
         a: num1,
         b: num2,
@@ -2305,6 +2312,12 @@
 
         if (this.selectedBottles.length === 2) {
           const [n1, n2] = this.selectedBottles;
+          let disp1 = n1;
+          let disp2 = n2;
+          if ((disp2 === 2 || disp1 === 2) && state.selectedNumbers.includes(2)) {
+            disp1 = 2;
+            disp2 = (n1 === 2 ? n2 : n1);
+          }
           const currentProd = n1 * n2;
 
           if (currentProd === this.targetProduct) {
@@ -2313,7 +2326,7 @@
             const smoke = document.getElementById('cauldron-smoke-emoji');
             smoke.textContent = '🌟💖✨';
             smoke.style.opacity = '1';
-            showToast(`太棒了！${n1} × ${n2} = ${this.targetProduct}，調配成功！`);
+            showToast(`太棒了！${disp1} × ${disp2} = ${this.targetProduct}，調配成功！`);
 
             this.completedCount++;
             this.updateBadge();
@@ -2331,7 +2344,7 @@
             const smoke = document.getElementById('cauldron-smoke-emoji');
             smoke.textContent = '💨';
             smoke.style.opacity = '1';
-            document.getElementById('cauldron-status-hint').textContent = `目前能量是 ${n1} × ${n2} = ${currentProd} 喔，再試試！`;
+            document.getElementById('cauldron-status-hint').textContent = `目前能量是 ${disp1} × ${disp2} = ${currentProd} 喔，再試試！`;
             showToast(`目前的能量是 ${currentProd} 喔，再試試看！`);
 
             setTimeout(() => {
@@ -2623,10 +2636,16 @@
         while (pairs.length < pairCount) {
           const a = pool[Math.floor(Math.random() * pool.length)];
           const b = Math.floor(Math.random() * 9) + 1;
-          const ans = a * b;
-          const key = `${a}x${b}`;
+          let num1 = a;
+          let num2 = b;
+          if ((num2 === 2 || num1 === 2) && state.selectedNumbers.includes(2)) {
+            num1 = 2;
+            num2 = (a === 2 ? b : a);
+          }
+          const ans = num1 * num2;
+          const key = `${num1}x${num2}`;
           if (!pairs.some(p => p.key === key)) {
-            pairs.push({ key, equation: `${a} × ${b}`, ans: `${ans}` });
+            pairs.push({ key, equation: `${num1} × ${num2}`, ans: `${ans}` });
           }
         }
 

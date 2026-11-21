@@ -43,17 +43,24 @@ export function toggleNumber(num) {
   }
 }
 
-// 根據使用者選取的數字庫產生算式題目
+// 根據使用者選取的數字庫產生算式題目（被乘數固定放前面）
+// 特別規則：若選到 2 的乘法，2 必定放最前面（只能 2 × 7，不能 7 × 2）
 export function getRandomQuestion() {
   const pool = state.selectedNumbers.length > 0 ? state.selectedNumbers : [2, 3, 5];
-  // 隨機選擇使用者指定的一個乘數
+  // 隨機選擇使用者指定的一個乘法表數字
   const a = pool[Math.floor(Math.random() * pool.length)];
-  // 被乘數 1 ~ 9
+  // 乘數 1 ~ 9
   const b = Math.floor(Math.random() * 9) + 1;
-  // 隨機反轉前後 a*b 或 b*a，讓孩子雙向熟悉乘法交換律
-  const swap = Math.random() > 0.5;
-  const num1 = swap ? b : a;
-  const num2 = swap ? a : b;
+
+  let num1 = a;
+  let num2 = b;
+
+  // 若有選到 2 的乘法，且算式中出現 2，保證 2 必定放最前面 (只能 2 × 7，不能 7 × 2)
+  if ((num2 === 2 || num1 === 2) && state.selectedNumbers.includes(2)) {
+    num1 = 2;
+    num2 = (a === 2 ? b : a);
+  }
+
   return {
     a: num1,
     b: num2,

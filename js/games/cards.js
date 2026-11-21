@@ -94,12 +94,18 @@ export const GameCards = {
     while (pairs.length < pairCount) {
       const a = pool[Math.floor(Math.random() * pool.length)];
       const b = Math.floor(Math.random() * 9) + 1;
-      const ans = a * b;
-      const key = `${a}x${b}`;
+      let num1 = a;
+      let num2 = b;
+      if ((num2 === 2 || num1 === 2) && state.selectedNumbers.includes(2)) {
+        num1 = 2;
+        num2 = (a === 2 ? b : a);
+      }
+      const ans = num1 * num2;
+      const key = `${num1}x${num2}`;
       if (!pairs.some(p => p.key === key)) {
         pairs.push({
           key,
-          equation: `${a} × ${b}`,
+          equation: `${num1} × ${num2}`,
           ans: `${ans}`
         });
       }

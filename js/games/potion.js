@@ -89,6 +89,12 @@ export const GamePotion = {
     // 當選取了 2 個材料時，丟進鍋爐調配熬煮
     if (this.selectedBottles.length === 2) {
       const [n1, n2] = this.selectedBottles;
+      let disp1 = n1;
+      let disp2 = n2;
+      if ((disp2 === 2 || disp1 === 2) && state.selectedNumbers.includes(2)) {
+        disp1 = 2;
+        disp2 = (n1 === 2 ? n2 : n1);
+      }
       const currentProd = n1 * n2;
 
       if (currentProd === this.targetProduct) {
@@ -98,7 +104,7 @@ export const GamePotion = {
         const smoke = document.getElementById('cauldron-smoke-emoji');
         smoke.textContent = '🌟💖✨';
         smoke.style.opacity = '1';
-        showToast(`太棒了！${n1} × ${n2} = ${this.targetProduct}，調配成功！`);
+        showToast(`太棒了！${disp1} × ${disp2} = ${this.targetProduct}，調配成功！`);
 
         this.completedCount++;
         this.updateBadge();
@@ -124,7 +130,7 @@ export const GamePotion = {
         smoke.textContent = '💨';
         smoke.style.opacity = '1';
 
-        document.getElementById('cauldron-status-hint').textContent = `目前能量是 ${n1} × ${n2} = ${currentProd} 喔，再試試！`;
+        document.getElementById('cauldron-status-hint').textContent = `目前能量是 ${disp1} × ${disp2} = ${currentProd} 喔，再試試！`;
         showToast(`目前的能量是 ${currentProd} 喔，再試試看！`);
 
         setTimeout(() => {
