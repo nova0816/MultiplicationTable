@@ -5,6 +5,12 @@
 
 ---
 
+## 🌐 線上即玩 (Live Demo)
+🎮 **立即在線暢玩 (GitHub Pages)**：[https://nova0816.github.io/MultiplicationTable/](https://nova0816.github.io/MultiplicationTable/)  
+🏠 **Nova's Web Apps Portal**：[https://nova0816.github.io/](https://nova0816.github.io/)
+
+---
+
 ## ⚡ 測試方式（最簡單，雙擊即玩！）
 本專案已全面整合為 **零依賴、純前端自包含架構 (Self-Contained HTML5)**：
 1. **本機電腦雙擊測試**：直接在檔案總管中雙擊 `index.html`，即開即玩，不需要開任何伺服器或安裝任何軟體！
