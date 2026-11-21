@@ -915,3 +915,284 @@
   .puzzle-op, .puzzle-eq { font-size: 1.35rem; }
   .puzzle-status-icon { width: 22px; height: 22px; font-size: 0.95rem; }
 }
+
+/* ========================================================================
+   遊戲 7: 九九乘法滑動拼圖 (Multiplication Sliding Puzzle)
+   ======================================================================== */
+#sliding-stage {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 10px 14px;
+  background: radial-gradient(circle at center, #FFF7ED 0%, #FFEDD5 55%, #FED7AA 100%);
+  border-radius: 0 0 24px 24px;
+  overflow-y: auto;
+}
+.sliding-top-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.sliding-moves-badge {
+  background: rgba(255, 255, 255, 0.9);
+  color: #C2410C;
+  font-weight: 800;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  box-shadow: 0 2px 6px rgba(194, 65, 12, 0.12);
+}
+.sliding-top-actions {
+  display: flex;
+  gap: 6px;
+}
+.sliding-theme-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
+  overflow-x: auto;
+  padding: 4px 6px;
+  margin-bottom: 6px;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.sliding-theme-bar::-webkit-scrollbar { display: none; }
+.theme-pill {
+  flex-shrink: 0;
+  padding: 5px 12px;
+  font-size: 0.85rem;
+  font-weight: 800;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.9);
+  border: 2px solid #FDBA74;
+  color: #9A3412;
+  cursor: pointer;
+  transition: all 0.2s;
+  user-select: none;
+}
+.theme-pill:hover {
+  background: #FFF7ED;
+  transform: translateY(-2px);
+}
+.theme-pill.active {
+  background: #EA580C;
+  color: white;
+  border-color: #C2410C;
+  box-shadow: 0 4px 10px rgba(234, 88, 12, 0.35);
+  transform: scale(1.05);
+}
+.sliding-hint-box {
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: #9A3412;
+  background: rgba(255, 255, 255, 0.85);
+  padding: 5px 14px;
+  border-radius: 16px;
+  margin-bottom: 8px;
+  text-align: center;
+  box-shadow: 0 2px 6px rgba(154, 52, 18, 0.08);
+  max-width: 440px;
+}
+.sliding-board-wrapper {
+  position: relative;
+  width: min(88vw, 380px);
+  height: min(88vw, 380px);
+  margin: 4px auto 10px;
+}
+.sliding-board {
+  --board-pad: 6px;
+  --board-gap: 6px;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: #EA580C;
+  border: 4px solid #FDBA74;
+  border-radius: 20px;
+  box-shadow: 0 10px 24px rgba(234, 88, 12, 0.28), inset 0 2px 8px rgba(0,0,0,0.18);
+  padding: var(--board-pad);
+  overflow: hidden;
+  touch-action: none;
+  transition: all 0.4s ease;
+}
+.sliding-board.board-won {
+  --board-pad: 0px;
+  --board-gap: 0px;
+  border-color: #10B981;
+  box-shadow: 0 12px 30px rgba(16, 185, 129, 0.4);
+}
+.sliding-slot {
+  position: absolute;
+  border-radius: 14px;
+  background: rgba(255, 237, 213, 0.35);
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  transition: all 0.3s;
+}
+.sliding-slot[data-pos="8"] {
+  background: rgba(255, 255, 255, 0.95);
+  border: 2px dashed #10B981;
+  box-shadow: inset 0 0 12px rgba(16, 185, 129, 0.25);
+}
+.slot-target-clue {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+.slot-target-clue .clue-tag {
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: #047857;
+  letter-spacing: 0.5px;
+  margin-bottom: 2px;
+}
+.slot-target-clue .clue-val {
+  font-size: 1.85rem;
+  font-weight: 900;
+  color: #059669;
+  line-height: 1;
+}
+.sliding-tile {
+  position: absolute;
+  border-radius: 14px;
+  overflow: hidden;
+  cursor: pointer;
+  user-select: none;
+  z-index: 5;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2), inset 0 0 0 1.5px rgba(255, 255, 255, 0.65);
+  transition: left 0.22s cubic-bezier(0.2, 0, 0, 1), top 0.22s cubic-bezier(0.2, 0, 0, 1), transform 0.15s ease, border-radius 0.35s, box-shadow 0.35s;
+  background-repeat: no-repeat;
+  background-size: 300% 300%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.sliding-tile:hover {
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.28), inset 0 0 0 2px white;
+}
+.sliding-tile:active {
+  transform: scale(0.96);
+}
+.sliding-board.board-won .sliding-tile {
+  border-radius: 0;
+  box-shadow: none;
+  cursor: default;
+}
+.tile-badge {
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(4px);
+  border-radius: 12px;
+  padding: 4px 10px;
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: #1E293B;
+  border: 2px solid white;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.16);
+  pointer-events: none;
+  transition: all 0.3s;
+}
+.tile-badge.badge-multiplicand {
+  color: #BE123C;
+}
+.tile-badge.badge-multiplier {
+  color: #1D4ED8;
+}
+.tile-badge.badge-product {
+  color: #B45309;
+  background: rgba(254, 243, 199, 0.95);
+  border-color: #FCD34D;
+}
+.sliding-board.board-won .tile-badge {
+  opacity: 0.82;
+  transform: scale(0.92);
+}
+.sliding-preview-overlay {
+  position: absolute;
+  inset: 0;
+  border-radius: 20px;
+  background-size: cover;
+  background-position: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+  z-index: 20;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+  border: 4px solid #EA580C;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 10px;
+}
+.sliding-preview-overlay.show {
+  opacity: 0.95;
+  pointer-events: auto;
+}
+.preview-tag {
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  font-weight: 800;
+  font-size: 0.9rem;
+  padding: 4px 14px;
+  border-radius: 12px;
+}
+.sliding-equations-tracker {
+  width: 100%;
+  max-width: 380px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.tracker-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(255, 255, 255, 0.9);
+  border: 2px solid #FED7AA;
+  border-radius: 14px;
+  padding: 6px 14px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+  transition: all 0.3s;
+}
+.tracker-row.row-done {
+  border-color: #10B981;
+  background: #ECFDF5;
+}
+.tracker-num {
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: #9A3412;
+  background: #FFEDD5;
+  padding: 2px 8px;
+  border-radius: 8px;
+}
+.tracker-row.row-done .tracker-num {
+  color: #047857;
+  background: #D1FAE5;
+}
+.tracker-eq {
+  font-size: 1.15rem;
+  font-weight: 900;
+  color: #1E293B;
+  letter-spacing: 0.5px;
+}
+.tracker-status {
+  font-size: 1.1rem;
+  font-weight: 900;
+}
+.tracker-row.row-done .tracker-status {
+  color: #10B981;
+}
+@media (max-width: 480px) {
+  .tile-badge { font-size: 1.25rem; padding: 2px 8px; }
+  .slot-target-clue .clue-val { font-size: 1.5rem; }
+  .slot-target-clue .clue-tag { font-size: 0.65rem; }
+  .tracker-eq { font-size: 1rem; }
+}

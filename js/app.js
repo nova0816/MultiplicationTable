@@ -12,6 +12,7 @@ import { GamePotion } from './games/potion.js';
 import { GameSpace } from './games/space.js';
 import { GameCards } from './games/cards.js';
 import { GamePuzzle } from './games/puzzle.js';
+import { GameSliding } from './games/sliding.js';
 
 const gamesMap = {
   monster: GameMonster,
@@ -19,7 +20,8 @@ const gamesMap = {
   potion: GamePotion,
   space: GameSpace,
   cards: GameCards,
-  puzzle: GamePuzzle
+  puzzle: GamePuzzle,
+  sliding: GameSliding
 };
 
 let activeGame = null;

@@ -319,6 +319,7 @@
     .game-card[data-game="space"] { border-color: #60A5FA; background: linear-gradient(135deg, #EFF6FF 0%, #FFFFFF 100%); }
     .game-card[data-game="cards"] { border-color: #FBBF24; background: linear-gradient(135deg, #FFFBEB 0%, #FFFFFF 100%); }
     .game-card[data-game="puzzle"] { border-color: #14B8A6; background: linear-gradient(135deg, #F0FDFA 0%, #FFFFFF 100%); }
+    .game-card[data-game="sliding"] { border-color: #F97316; background: linear-gradient(135deg, #FFF7ED 0%, #FFFFFF 100%); }
 
     .game-card-icon {
       width: 76px;
@@ -351,6 +352,7 @@
     .game-card[data-game="space"] .game-card-tag { background: #DBEAFE; color: #2563EB; }
     .game-card[data-game="cards"] .game-card-tag { background: #FEF3C7; color: #D97706; }
     .game-card[data-game="puzzle"] .game-card-tag { background: #CCFBF1; color: #0D9488; }
+    .game-card[data-game="sliding"] .game-card-tag { background: #FFEDD5; color: #EA580C; }
 
     .game-card-info p {
       font-size: 0.92rem;
@@ -1395,6 +1397,287 @@
       .puzzle-op, .puzzle-eq { font-size: 1.35rem; }
       .puzzle-status-icon { width: 22px; height: 22px; font-size: 0.95rem; }
     }
+
+    /* ========================================================================
+       遊戲 7: 九九乘法滑動拼圖 (Multiplication Sliding Puzzle)
+       ======================================================================== */
+    #sliding-stage {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 10px 14px;
+      background: radial-gradient(circle at center, #FFF7ED 0%, #FFEDD5 55%, #FED7AA 100%);
+      border-radius: 0 0 24px 24px;
+      overflow-y: auto;
+    }
+    .sliding-top-info {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .sliding-moves-badge {
+      background: rgba(255, 255, 255, 0.9);
+      color: #C2410C;
+      font-weight: 800;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 0.95rem;
+      box-shadow: 0 2px 6px rgba(194, 65, 12, 0.12);
+    }
+    .sliding-top-actions {
+      display: flex;
+      gap: 6px;
+    }
+    .sliding-theme-bar {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      max-width: 100%;
+      overflow-x: auto;
+      padding: 4px 6px;
+      margin-bottom: 6px;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+    }
+    .sliding-theme-bar::-webkit-scrollbar { display: none; }
+    .theme-pill {
+      flex-shrink: 0;
+      padding: 5px 12px;
+      font-size: 0.85rem;
+      font-weight: 800;
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.9);
+      border: 2px solid #FDBA74;
+      color: #9A3412;
+      cursor: pointer;
+      transition: all 0.2s;
+      user-select: none;
+    }
+    .theme-pill:hover {
+      background: #FFF7ED;
+      transform: translateY(-2px);
+    }
+    .theme-pill.active {
+      background: #EA580C;
+      color: white;
+      border-color: #C2410C;
+      box-shadow: 0 4px 10px rgba(234, 88, 12, 0.35);
+      transform: scale(1.05);
+    }
+    .sliding-hint-box {
+      font-size: 0.88rem;
+      font-weight: 800;
+      color: #9A3412;
+      background: rgba(255, 255, 255, 0.85);
+      padding: 5px 14px;
+      border-radius: 16px;
+      margin-bottom: 8px;
+      text-align: center;
+      box-shadow: 0 2px 6px rgba(154, 52, 18, 0.08);
+      max-width: 440px;
+    }
+    .sliding-board-wrapper {
+      position: relative;
+      width: min(88vw, 380px);
+      height: min(88vw, 380px);
+      margin: 4px auto 10px;
+    }
+    .sliding-board {
+      --board-pad: 6px;
+      --board-gap: 6px;
+      position: relative;
+      width: 100%;
+      height: 100%;
+      background: #EA580C;
+      border: 4px solid #FDBA74;
+      border-radius: 20px;
+      box-shadow: 0 10px 24px rgba(234, 88, 12, 0.28), inset 0 2px 8px rgba(0,0,0,0.18);
+      padding: var(--board-pad);
+      overflow: hidden;
+      touch-action: none;
+      transition: all 0.4s ease;
+    }
+    .sliding-board.board-won {
+      --board-pad: 0px;
+      --board-gap: 0px;
+      border-color: #10B981;
+      box-shadow: 0 12px 30px rgba(16, 185, 129, 0.4);
+    }
+    .sliding-slot {
+      position: absolute;
+      border-radius: 14px;
+      background: rgba(255, 237, 213, 0.35);
+      box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+      transition: all 0.3s;
+    }
+    .sliding-slot[data-pos="8"] {
+      background: rgba(255, 255, 255, 0.95);
+      border: 2px dashed #10B981;
+      box-shadow: inset 0 0 12px rgba(16, 185, 129, 0.25);
+    }
+    .slot-target-clue {
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+    }
+    .slot-target-clue .clue-tag {
+      font-size: 0.72rem;
+      font-weight: 800;
+      color: #047857;
+      letter-spacing: 0.5px;
+      margin-bottom: 2px;
+    }
+    .slot-target-clue .clue-val {
+      font-size: 1.85rem;
+      font-weight: 900;
+      color: #059669;
+      line-height: 1;
+    }
+    .sliding-tile {
+      position: absolute;
+      border-radius: 14px;
+      overflow: hidden;
+      cursor: pointer;
+      user-select: none;
+      z-index: 5;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2), inset 0 0 0 1.5px rgba(255, 255, 255, 0.65);
+      transition: left 0.22s cubic-bezier(0.2, 0, 0, 1), top 0.22s cubic-bezier(0.2, 0, 0, 1), transform 0.15s ease, border-radius 0.35s, box-shadow 0.35s;
+      background-repeat: no-repeat;
+      background-size: 300% 300%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .sliding-tile:hover {
+      box-shadow: 0 6px 14px rgba(0, 0, 0, 0.28), inset 0 0 0 2px white;
+    }
+    .sliding-tile:active {
+      transform: scale(0.96);
+    }
+    .sliding-board.board-won .sliding-tile {
+      border-radius: 0;
+      box-shadow: none;
+      cursor: default;
+    }
+    .tile-badge {
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(4px);
+      border-radius: 12px;
+      padding: 4px 10px;
+      font-size: 1.5rem;
+      font-weight: 900;
+      color: #1E293B;
+      border: 2px solid white;
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.16);
+      pointer-events: none;
+      transition: all 0.3s;
+    }
+    .tile-badge.badge-multiplicand {
+      color: #BE123C;
+    }
+    .tile-badge.badge-multiplier {
+      color: #1D4ED8;
+    }
+    .tile-badge.badge-product {
+      color: #B45309;
+      background: rgba(254, 243, 199, 0.95);
+      border-color: #FCD34D;
+    }
+    .sliding-board.board-won .tile-badge {
+      opacity: 0.82;
+      transform: scale(0.92);
+    }
+    .sliding-preview-overlay {
+      position: absolute;
+      inset: 0;
+      border-radius: 20px;
+      background-size: cover;
+      background-position: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+      z-index: 20;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+      border: 4px solid #EA580C;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding-top: 10px;
+    }
+    .sliding-preview-overlay.show {
+      opacity: 0.95;
+      pointer-events: auto;
+    }
+    .preview-tag {
+      background: rgba(0, 0, 0, 0.7);
+      color: white;
+      font-weight: 800;
+      font-size: 0.9rem;
+      padding: 4px 14px;
+      border-radius: 12px;
+    }
+    .sliding-equations-tracker {
+      width: 100%;
+      max-width: 380px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .tracker-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(255, 255, 255, 0.9);
+      border: 2px solid #FED7AA;
+      border-radius: 14px;
+      padding: 6px 14px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+      transition: all 0.3s;
+    }
+    .tracker-row.row-done {
+      border-color: #10B981;
+      background: #ECFDF5;
+    }
+    .tracker-num {
+      font-size: 0.8rem;
+      font-weight: 800;
+      color: #9A3412;
+      background: #FFEDD5;
+      padding: 2px 8px;
+      border-radius: 8px;
+    }
+    .tracker-row.row-done .tracker-num {
+      color: #047857;
+      background: #D1FAE5;
+    }
+    .tracker-eq {
+      font-size: 1.15rem;
+      font-weight: 900;
+      color: #1E293B;
+      letter-spacing: 0.5px;
+    }
+    .tracker-status {
+      font-size: 1.1rem;
+      font-weight: 900;
+    }
+    .tracker-row.row-done .tracker-status {
+      color: #10B981;
+    }
+    @media (max-width: 480px) {
+      .tile-badge { font-size: 1.25rem; padding: 2px 8px; }
+      .slot-target-clue .clue-val { font-size: 1.5rem; }
+      .slot-target-clue .clue-tag { font-size: 0.65rem; }
+      .tracker-eq { font-size: 1rem; }
+    }
   </style>
 </head>
 <body>
@@ -1496,6 +1779,16 @@
             <span class="game-card-tag">算式拼圖解謎型</span>
             <h3>6. 乘法方塊大挪移</h3>
             <p>方塊兩兩互換，解開所有乘法等式！從 2 排晉級到 5 排大破關！</p>
+          </div>
+        </div>
+
+        <!-- 遊戲 7 -->
+        <div class="game-card" data-game="sliding" id="card-sliding">
+          <div class="game-card-icon">🖼️</div>
+          <div class="game-card-info">
+            <span class="game-card-tag">3x3 滑動拼圖型</span>
+            <h3>7. 九九乘法滑動拼圖</h3>
+            <p>滑動拼圖塊還原 3 列乘法算式，拼出可愛插畫！</p>
           </div>
         </div>
       </div>
@@ -1710,6 +2003,60 @@
             <button class="puzzle-check-btn" id="btn-puzzle-check">
               <span>✅ 確定檢查</span>
             </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== 8. 遊戲 7: 九九乘法滑動拼圖 ===================== -->
+    <section id="view-sliding" class="view-section">
+      <div class="game-stage-wrapper">
+        <div class="game-top-bar">
+          <div class="game-title-badge">🖼️ 乘法滑動拼圖</div>
+          <div class="sliding-top-info">
+            <span class="sliding-moves-badge">步數：<b id="sliding-move-count">0</b></span>
+          </div>
+          <div class="sliding-top-actions">
+            <button class="mini-btn" id="btn-sliding-preview" title="偷看原圖 2 秒">👁️ 偷看</button>
+            <button class="mini-btn" id="btn-sliding-shuffle" title="重新打亂">🔄 重洗</button>
+            <button class="mini-btn" id="btn-sliding-new" title="產生新題目">🎲 換題</button>
+          </div>
+        </div>
+        <div id="sliding-stage">
+          <!-- 主題選擇列 -->
+          <div class="sliding-theme-bar" id="sliding-theme-bar"></div>
+
+          <!-- 提示指引 -->
+          <div class="sliding-hint-box" id="sliding-hint-box">
+            滑動拼圖塊還原 3 列乘法算式！右下角底板印有第 3 列的目標答案喔！
+          </div>
+
+          <!-- 拼圖主盤面 (3x3) -->
+          <div class="sliding-board-wrapper">
+            <div id="sliding-board" class="sliding-board"></div>
+            <!-- 偷看原圖覆蓋層 -->
+            <div id="sliding-preview-overlay" class="sliding-preview-overlay">
+              <div class="preview-tag">👁️ 完整插畫預覽</div>
+            </div>
+          </div>
+
+          <!-- 底部即時算式檢視清單 -->
+          <div class="sliding-equations-tracker" id="sliding-equations-tracker">
+            <div class="tracker-row" id="tracker-row-0">
+              <span class="tracker-num">第 1 列</span>
+              <span class="tracker-eq" id="tracker-eq-0">? × ? = ?</span>
+              <span class="tracker-status" id="tracker-status-0">⏳</span>
+            </div>
+            <div class="tracker-row" id="tracker-row-1">
+              <span class="tracker-num">第 2 列</span>
+              <span class="tracker-eq" id="tracker-eq-1">? × ? = ?</span>
+              <span class="tracker-status" id="tracker-status-1">⏳</span>
+            </div>
+            <div class="tracker-row" id="tracker-row-2">
+              <span class="tracker-num">第 3 列</span>
+              <span class="tracker-eq" id="tracker-eq-2">? × ? = ?</span>
+              <span class="tracker-status" id="tracker-status-2">⏳</span>
+            </div>
           </div>
         </div>
       </div>
@@ -2179,6 +2526,7 @@
         else if (viewName === 'space') { activeGame = GameSpace; GameSpace.start(); }
         else if (viewName === 'cards') { activeGame = GameCards; GameCards.start(); }
         else if (viewName === 'puzzle') { activeGame = GamePuzzle; GamePuzzle.start(); }
+        else if (viewName === 'sliding') { activeGame = GameSliding; GameSliding.start(); }
       }
     }
 
@@ -3403,7 +3751,494 @@
     };
 
     // ------------------------------------------------------------------------
-    // 12. 初始化與事件綁定
+    // 12. 遊戲 7: 九九乘法滑動拼圖 (Multiplication Sliding Puzzle)
+    // ------------------------------------------------------------------------
+    const GameSliding = {
+      themes: [
+        { id: 'dinosaur', name: '🦖 恐龍先生', file: 'assets/puzzle/ep18_dinosaur.png' },
+        { id: 'rocket',   name: '🚀 太空火箭', file: 'assets/puzzle/ep2_rocket.png' },
+        { id: 'rabbit',   name: '🐰 可愛兔兔', file: 'assets/puzzle/ep31_rabbit.png' },
+        { id: 'cake',     name: '🍰 生日蛋糕', file: 'assets/puzzle/ep18_cake.png' },
+        { id: 'lion',     name: '🦁 歡樂小獅', file: 'assets/puzzle/ep29_lion.png' },
+        { id: 'balloon',  name: '🎈 夢幻熱球', file: 'assets/puzzle/ep17_balloon.png' },
+        { id: 'treasure', name: '🏴‍☠️ 藏寶箱',   file: 'assets/puzzle/ep2_treasure.png' },
+        { id: 'toy',      name: '🧸 歡樂玩具', file: 'assets/puzzle/ep11_toy.png' }
+      ],
+      currentThemeIndex: 0,
+      equations: [], // 3 equations: [E0, E1, E2]
+      tileDefs: [],  // 9 tiles definitions: [0..7 movable, 8 winning piece]
+      board: [],     // array of 9 positions: board[pos] = tileId (0..7, or 8 for empty)
+      emptyPos: 8,
+      moves: 0,
+      isWon: false,
+      controlsBound: false,
+
+      start() {
+        this.setupControls();
+        this.renderThemeBar();
+        this.newGame();
+      },
+
+      setupControls() {
+        if (this.controlsBound) return;
+        this.controlsBound = true;
+
+        const previewBtn = document.getElementById('btn-sliding-preview');
+        const shuffleBtn = document.getElementById('btn-sliding-shuffle');
+        const newBtn = document.getElementById('btn-sliding-new');
+
+        if (previewBtn) {
+          previewBtn.onclick = () => this.previewImage();
+        }
+        if (shuffleBtn) {
+          shuffleBtn.onclick = () => {
+            sound.playPop();
+            this.shuffleCurrent();
+            showToast('🔄 已重新打亂拼圖！');
+          };
+        }
+        if (newBtn) {
+          newBtn.onclick = () => {
+            sound.playPop();
+            this.newGame();
+            showToast('🎲 換了 3 組全新的乘法題目！');
+          };
+        }
+
+        // 綁定鍵盤方向鍵
+        window.addEventListener('keydown', (e) => {
+          if (state.currentView !== 'sliding' || this.isWon) return;
+          const r = Math.floor(this.emptyPos / 3);
+          const c = this.emptyPos % 3;
+          let target = -1;
+          if (e.key === 'ArrowUp' && r < 2) target = this.emptyPos + 3;
+          else if (e.key === 'ArrowDown' && r > 0) target = this.emptyPos - 3;
+          else if (e.key === 'ArrowLeft' && c < 2) target = this.emptyPos + 1;
+          else if (e.key === 'ArrowRight' && c > 0) target = this.emptyPos - 1;
+
+          if (target >= 0) {
+            e.preventDefault();
+            this.moveTileAtPos(target);
+          }
+        });
+
+        // 綁定觸控滑動手勢
+        const boardEl = document.getElementById('sliding-board');
+        let touchX = 0, touchY = 0;
+        boardEl.addEventListener('touchstart', (e) => {
+          if (e.touches.length > 0) {
+            touchX = e.touches[0].clientX;
+            touchY = e.touches[0].clientY;
+          }
+        }, { passive: true });
+
+        boardEl.addEventListener('touchend', (e) => {
+          if (this.isWon || e.changedTouches.length === 0) return;
+          const dx = e.changedTouches[0].clientX - touchX;
+          const dy = e.changedTouches[0].clientY - touchY;
+          const absDx = Math.abs(dx);
+          const absDy = Math.abs(dy);
+          if (Math.max(absDx, absDy) < 25) return;
+
+          const r = Math.floor(this.emptyPos / 3);
+          const c = this.emptyPos % 3;
+          let target = -1;
+          if (absDx > absDy) {
+            if (dx > 0 && c > 0) target = this.emptyPos - 1;
+            else if (dx < 0 && c < 2) target = this.emptyPos + 1;
+          } else {
+            if (dy > 0 && r > 0) target = this.emptyPos - 3;
+            else if (dy < 0 && r < 2) target = this.emptyPos + 3;
+          }
+
+          if (target >= 0) {
+            this.moveTileAtPos(target);
+          }
+        }, { passive: true });
+      },
+
+      renderThemeBar() {
+        const bar = document.getElementById('sliding-theme-bar');
+        if (!bar) return;
+        bar.innerHTML = '';
+
+        this.themes.forEach((th, idx) => {
+          const pill = document.createElement('div');
+          pill.className = `theme-pill ${idx === this.currentThemeIndex ? 'active' : ''}`;
+          pill.textContent = th.name;
+          pill.onclick = () => {
+            sound.playPop();
+            this.setTheme(idx);
+          };
+          bar.appendChild(pill);
+        });
+      },
+
+      setTheme(idx) {
+        this.currentThemeIndex = idx;
+        document.querySelectorAll('.theme-pill').forEach((el, i) => {
+          el.classList.toggle('active', i === idx);
+        });
+        const currentTheme = this.themes[this.currentThemeIndex];
+
+        // 更新所有拼圖塊背景圖
+        for (let tileId = 0; tileId < 9; tileId++) {
+          const tileEl = document.getElementById(`sliding-tile-${tileId}`);
+          if (tileEl) {
+            tileEl.style.backgroundImage = `url('${currentTheme.file}')`;
+          }
+        }
+        // 更新偷看預覽圖
+        const preview = document.getElementById('sliding-preview-overlay');
+        if (preview) {
+          preview.style.backgroundImage = `url('${currentTheme.file}')`;
+        }
+      },
+
+      previewImage() {
+        sound.playPop();
+        const preview = document.getElementById('sliding-preview-overlay');
+        if (!preview) return;
+        preview.classList.add('show');
+        setTimeout(() => {
+          preview.classList.remove('show');
+        }, 2200);
+      },
+
+      generateEquations() {
+        const pool = state.selectedNumbers.length > 0 ? state.selectedNumbers : [2, 3, 5];
+        const equations = [];
+        const usedTargets = new Set();
+        const usedPairs = new Set();
+        let attempts = 0;
+
+        while (equations.length < 3 && attempts < 300) {
+          attempts++;
+          let a = pool[Math.floor(Math.random() * pool.length)];
+          let b = Math.floor(Math.random() * 9) + 1;
+
+          // 若有選 2，2 必須放在前面 (例如 2 x 7，不能 7 x 2)
+          if ((b === 2 || a === 2) && state.selectedNumbers.includes(2)) {
+            a = 2;
+            if (b === 2) b = Math.floor(Math.random() * 8) + 2;
+          }
+
+          const target = a * b;
+          const pairKey = `${Math.min(a, b)}-${Math.max(a, b)}`;
+
+          if (!usedTargets.has(target) && !usedPairs.has(pairKey)) {
+            usedTargets.add(target);
+            usedPairs.add(pairKey);
+            equations.push({ solA: a, solB: b, target: target });
+          }
+        }
+
+        // 保底機制
+        while (equations.length < 3) {
+          const a = pool[0];
+          const b = equations.length + 2;
+          equations.push({ solA: a, solB: b, target: a * b });
+        }
+
+        this.equations = equations;
+      },
+
+      setupTileDefs() {
+        const eq = this.equations;
+        this.tileDefs = [
+          { id: 0, text: `${eq[0].solA} ×`, type: 'multiplicand', origRow: 0, origCol: 0 },
+          { id: 1, text: `${eq[0].solB} =`, type: 'multiplier',   origRow: 0, origCol: 1 },
+          { id: 2, text: `${eq[0].target}`, type: 'product',      origRow: 0, origCol: 2 },
+          { id: 3, text: `${eq[1].solA} ×`, type: 'multiplicand', origRow: 1, origCol: 0 },
+          { id: 4, text: `${eq[1].solB} =`, type: 'multiplier',   origRow: 1, origCol: 1 },
+          { id: 5, text: `${eq[1].target}`, type: 'product',      origRow: 1, origCol: 2 },
+          { id: 6, text: `${eq[2].solA} ×`, type: 'multiplicand', origRow: 2, origCol: 0 },
+          { id: 7, text: `${eq[2].solB} =`, type: 'multiplier',   origRow: 2, origCol: 1 },
+          { id: 8, text: `${eq[2].target}`, type: 'product',      origRow: 2, origCol: 2 }
+        ];
+      },
+
+      getAdjacent(pos) {
+        const r = Math.floor(pos / 3);
+        const c = pos % 3;
+        const list = [];
+        if (r > 0) list.push(pos - 3);
+        if (r < 2) list.push(pos + 3);
+        if (c > 0) list.push(pos - 1);
+        if (c < 2) list.push(pos + 1);
+        return list;
+      },
+
+      shuffleBoard(steps = 60) {
+        let cur = [0, 1, 2, 3, 4, 5, 6, 7, 8];
+        let empty = 8;
+        let lastMovedTile = -1;
+
+        for (let i = 0; i < steps; i++) {
+          const adj = this.getAdjacent(empty).filter(p => cur[p] !== lastMovedTile);
+          const chosenPos = adj[Math.floor(Math.random() * adj.length)];
+          const movedTile = cur[chosenPos];
+          cur[empty] = movedTile;
+          cur[chosenPos] = 8;
+          lastMovedTile = movedTile;
+          empty = chosenPos;
+        }
+
+        const isSolved = cur.every((t, idx) => t === idx);
+        if (isSolved) {
+          return this.shuffleBoard(steps + 10);
+        }
+        return { board: cur, emptyPos: empty };
+      },
+
+      newGame() {
+        this.isWon = false;
+        this.moves = 0;
+        this.updateMovesDisplay();
+
+        const boardEl = document.getElementById('sliding-board');
+        if (boardEl) boardEl.classList.remove('board-won');
+
+        this.generateEquations();
+        this.setupTileDefs();
+
+        const shuffled = this.shuffleBoard(60);
+        this.board = shuffled.board;
+        this.emptyPos = shuffled.emptyPos;
+
+        this.renderBoardDom();
+        this.updateTracker();
+        this.setTheme(this.currentThemeIndex);
+      },
+
+      shuffleCurrent() {
+        this.isWon = false;
+        this.moves = 0;
+        this.updateMovesDisplay();
+
+        const boardEl = document.getElementById('sliding-board');
+        if (boardEl) boardEl.classList.remove('board-won');
+
+        const shuffled = this.shuffleBoard(60);
+        this.board = shuffled.board;
+        this.emptyPos = shuffled.emptyPos;
+
+        this.updateTilesPosition(false);
+        this.updateTracker();
+      },
+
+      renderBoardDom() {
+        const boardEl = document.getElementById('sliding-board');
+        if (!boardEl) return;
+        boardEl.innerHTML = '';
+
+        // 渲染 9 個格座 (底板)
+        for (let pos = 0; pos < 9; pos++) {
+          const r = Math.floor(pos / 3);
+          const c = pos % 3;
+          const slot = document.createElement('div');
+          slot.className = 'sliding-slot';
+          slot.dataset.pos = pos;
+          slot.style.left = `calc(var(--board-pad) + ${c} * ((100% - 2 * var(--board-pad) - 2 * var(--board-gap)) / 3 + var(--board-gap)))`;
+          slot.style.top = `calc(var(--board-pad) + ${r} * ((100% - 2 * var(--board-pad) - 2 * var(--board-gap)) / 3 + var(--board-gap)))`;
+          slot.style.width = `calc((100% - 2 * var(--board-pad) - 2 * var(--board-gap)) / 3)`;
+          slot.style.height = `calc((100% - 2 * var(--board-pad) - 2 * var(--board-gap)) / 3)`;
+
+          // 第 8 格 (右下角) 印製綠色目標答案底板
+          if (pos === 8) {
+            slot.innerHTML = `
+              <div class="slot-target-clue">
+                <span class="clue-tag">第 3 列目標</span>
+                <span class="clue-val">${this.equations[2].target}</span>
+              </div>
+            `;
+          }
+          boardEl.appendChild(slot);
+        }
+
+        const currentTheme = this.themes[this.currentThemeIndex];
+
+        // 渲染 9 塊拼圖塊 (0~7 為可移動方塊，8 為過關勝利時補齊方塊)
+        for (let tileId = 0; tileId < 9; tileId++) {
+          const def = this.tileDefs[tileId];
+          const tileEl = document.createElement('div');
+          tileEl.className = 'sliding-tile';
+          tileEl.id = `sliding-tile-${tileId}`;
+          tileEl.dataset.tileId = tileId;
+          tileEl.style.backgroundImage = `url('${currentTheme.file}')`;
+          tileEl.style.backgroundPosition = `${def.origCol * 50}% ${def.origRow * 50}%`;
+          tileEl.style.width = `calc((100% - 2 * var(--board-pad) - 2 * var(--board-gap)) / 3)`;
+          tileEl.style.height = `calc((100% - 2 * var(--board-pad) - 2 * var(--board-gap)) / 3)`;
+
+          tileEl.innerHTML = `
+            <div class="tile-badge badge-${def.type}">
+              <span class="badge-text">${def.text}</span>
+            </div>
+          `;
+
+          if (tileId === 8) {
+            tileEl.style.display = 'none';
+          }
+
+          tileEl.addEventListener('click', () => {
+            if (this.isWon) return;
+            const currentPos = this.board.indexOf(tileId);
+            if (currentPos >= 0) {
+              this.moveTileAtPos(currentPos);
+            }
+          });
+
+          boardEl.appendChild(tileEl);
+        }
+
+        this.updateTilesPosition(false);
+      },
+
+      updateTilesPosition(animate = true) {
+        this.board.forEach((tileId, pos) => {
+          if (tileId === 8) return;
+          const tileEl = document.getElementById(`sliding-tile-${tileId}`);
+          if (!tileEl) return;
+
+          const r = Math.floor(pos / 3);
+          const c = pos % 3;
+
+          if (!animate) {
+            tileEl.style.transition = 'none';
+          } else {
+            tileEl.style.transition = 'left 0.22s cubic-bezier(0.2, 0, 0, 1), top 0.22s cubic-bezier(0.2, 0, 0, 1)';
+          }
+
+          tileEl.style.left = `calc(var(--board-pad) + ${c} * ((100% - 2 * var(--board-pad) - 2 * var(--board-gap)) / 3 + var(--board-gap)))`;
+          tileEl.style.top = `calc(var(--board-pad) + ${r} * ((100% - 2 * var(--board-pad) - 2 * var(--board-gap)) / 3 + var(--board-gap)))`;
+
+          if (!animate) {
+            void tileEl.offsetWidth;
+            tileEl.style.transition = '';
+          }
+        });
+      },
+
+      moveTileAtPos(pos) {
+        if (this.isWon) return;
+        const adj = this.getAdjacent(pos);
+        if (!adj.includes(this.emptyPos)) {
+          return;
+        }
+
+        sound.playPop();
+        const tileId = this.board[pos];
+        this.board[this.emptyPos] = tileId;
+        this.board[pos] = 8;
+        this.emptyPos = pos;
+
+        this.moves++;
+        this.updateMovesDisplay();
+        this.updateTilesPosition(true);
+        this.updateTracker();
+
+        this.checkWin();
+      },
+
+      updateMovesDisplay() {
+        const el = document.getElementById('sliding-move-count');
+        if (el) el.textContent = this.moves;
+      },
+
+      updateTracker() {
+        const rows = [
+          { row: 0, eq: this.equations[0], tiles: [0, 1, 2] },
+          { row: 1, eq: this.equations[1], tiles: [3, 4, 5] },
+          { row: 2, eq: this.equations[2], tiles: [6, 7, 8] }
+        ];
+
+        rows.forEach(({ row, eq, tiles }) => {
+          const rowEl = document.getElementById(`tracker-row-${row}`);
+          const eqEl = document.getElementById(`tracker-eq-${row}`);
+          const statusEl = document.getElementById(`tracker-status-${row}`);
+          if (!rowEl || !eqEl || !statusEl) return;
+
+          const isRowCorrect = (
+            this.board[row * 3] === tiles[0] &&
+            this.board[row * 3 + 1] === tiles[1] &&
+            this.board[row * 3 + 2] === tiles[2]
+          );
+
+          if (isRowCorrect) {
+            rowEl.classList.add('row-done');
+            eqEl.textContent = `${eq.solA} × ${eq.solB} = ${eq.target}`;
+            statusEl.textContent = '✓';
+          } else {
+            rowEl.classList.remove('row-done');
+            eqEl.textContent = `${eq.solA} × ${eq.solB} = ${eq.target}`;
+            statusEl.textContent = '⏳';
+          }
+        });
+      },
+
+      checkWin() {
+        const won = this.board.every((t, i) => t === i);
+        if (won && !this.isWon) {
+          this.isWon = true;
+          this.triggerWin();
+        }
+      },
+
+      triggerWin() {
+        const boardEl = document.getElementById('sliding-board');
+        if (boardEl) boardEl.classList.add('board-won');
+
+        // 補齊第 8 格缺塊
+        const tile8 = document.getElementById('sliding-tile-8');
+        if (tile8) {
+          tile8.style.display = 'flex';
+          const r = 2, c = 2;
+          tile8.style.left = `calc(var(--board-pad) + ${c} * ((100% - 2 * var(--board-pad) - 2 * var(--board-gap)) / 3 + var(--board-gap)))`;
+          tile8.style.top = `calc(var(--board-pad) + ${r} * ((100% - 2 * var(--board-pad) - 2 * var(--board-gap)) / 3 + var(--board-gap)))`;
+          tile8.style.opacity = '0';
+          tile8.style.transform = 'scale(0.8)';
+          setTimeout(() => {
+            tile8.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+            tile8.style.opacity = '1';
+            tile8.style.transform = 'scale(1)';
+          }, 80);
+        }
+
+        sound.playMonsterSuccess();
+        Confetti.burst(60);
+        showToast('🎉 太神了！拼圖完整還原！乘法大師！');
+
+        // 依序高亮慶祝三組算式
+        for (let row = 0; row < 3; row++) {
+          setTimeout(() => {
+            const rowEl = document.getElementById(`tracker-row-${row}`);
+            if (rowEl) {
+              rowEl.style.transform = 'scale(1.08)';
+              sound.playPop();
+              setTimeout(() => { rowEl.style.transform = ''; }, 300);
+            }
+          }, 400 + row * 400);
+        }
+
+        // 彈出過關獲勝彈窗
+        setTimeout(() => {
+          const th = this.themes[this.currentThemeIndex];
+          showVictoryModal(
+            '拼圖大成功！乘法神童！',
+            `太厲害了！你僅用了 ${this.moves} 步，成功拼出了可愛的【${th.name}】插畫，並還原了 3 組完整的九九乘法算式！🏆✨`,
+            '🖼️',
+            () => this.newGame()
+          );
+        }, 1800);
+      },
+
+      cleanup() {
+        this.isWon = false;
+      }
+    };
+
+    // ------------------------------------------------------------------------
+    // 13. 初始化與事件綁定
     // ------------------------------------------------------------------------
     window.addEventListener('DOMContentLoaded', () => {
       Confetti.init();
@@ -3440,14 +4275,15 @@
         renderNumberSelector();
       });
 
-      // 6 大遊戲卡片點擊監聽 (點擊任何卡片立即進入遊戲)
+      // 7 大遊戲卡片點擊監聽 (點擊任何卡片立即進入遊戲)
       const gameCards = [
         { id: 'card-monster', view: 'monster' },
         { id: 'card-frog', view: 'frog' },
         { id: 'card-potion', view: 'potion' },
         { id: 'card-space', view: 'space' },
         { id: 'card-cards', view: 'cards' },
-        { id: 'card-puzzle', view: 'puzzle' }
+        { id: 'card-puzzle', view: 'puzzle' },
+        { id: 'card-sliding', view: 'sliding' }
       ];
 
       gameCards.forEach(item => {
