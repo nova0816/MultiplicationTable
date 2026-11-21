@@ -26,6 +26,7 @@ export const GameSliding = {
   moves: 0,
   isWon: false,
   controlsBound: false,
+  hintTimer: null,
 
   start() {
     this.setupControls();
@@ -40,9 +41,16 @@ export const GameSliding = {
     const previewBtn = document.getElementById('btn-sliding-preview');
     const shuffleBtn = document.getElementById('btn-sliding-shuffle');
     const newBtn = document.getElementById('btn-sliding-new');
+    const hintOverlay = document.getElementById('sliding-hint-overlay');
 
     if (previewBtn) {
-      previewBtn.onclick = () => this.previewImage();
+      previewBtn.onclick = () => this.previewHint();
+    }
+    if (hintOverlay) {
+      hintOverlay.onclick = () => {
+        if (this.hintTimer) clearTimeout(this.hintTimer);
+        hintOverlay.classList.remove('show');
+      };
     }
     if (shuffleBtn) {
       shuffleBtn.onclick = () => {
@@ -143,20 +151,26 @@ export const GameSliding = {
         tileEl.style.backgroundImage = `url('${currentTheme.file}')`;
       }
     }
-    const preview = document.getElementById('sliding-preview-overlay');
-    if (preview) {
-      preview.style.backgroundImage = `url('${currentTheme.file}')`;
-    }
   },
 
-  previewImage() {
+  previewHint() {
     sound.playPop();
-    const preview = document.getElementById('sliding-preview-overlay');
-    if (!preview) return;
-    preview.classList.add('show');
-    setTimeout(() => {
-      preview.classList.remove('show');
-    }, 2200);
+    const overlay = document.getElementById('sliding-hint-overlay');
+    if (!overlay) return;
+
+    const eq0 = document.getElementById('hint-eq-0');
+    const eq1 = document.getElementById('hint-eq-1');
+    const eq2 = document.getElementById('hint-eq-2');
+    if (eq0 && this.equations[0]) eq0.textContent = `${this.equations[0].solA} × ${this.equations[0].solB} = ${this.equations[0].target}`;
+    if (eq1 && this.equations[1]) eq1.textContent = `${this.equations[1].solA} × ${this.equations[1].solB} = ${this.equations[1].target}`;
+    if (eq2 && this.equations[2]) eq2.textContent = `${this.equations[2].solA} × ${this.equations[2].solB} = ${this.equations[2].target}`;
+
+    overlay.classList.add('show');
+
+    if (this.hintTimer) clearTimeout(this.hintTimer);
+    this.hintTimer = setTimeout(() => {
+      overlay.classList.remove('show');
+    }, 3000);
   },
 
   generateEquations() {
@@ -171,7 +185,7 @@ export const GameSliding = {
       let a = pool[Math.floor(Math.random() * pool.length)];
       let b = Math.floor(Math.random() * 9) + 1;
 
-      // 若有選 2，2 必須在前面
+      // 若有選 2，2 必須在前面 (例如 2 x 7，不能 7 x 2)
       if ((b === 2 || a === 2) && state.selectedNumbers.includes(2)) {
         a = 2;
         if (b === 2) b = Math.floor(Math.random() * 8) + 2;
@@ -260,7 +274,6 @@ export const GameSliding = {
     this.emptyPos = shuffled.emptyPos;
 
     this.renderBoardDom();
-    this.updateTracker();
     this.setTheme(this.currentThemeIndex);
   },
 
@@ -277,7 +290,6 @@ export const GameSliding = {
     this.emptyPos = shuffled.emptyPos;
 
     this.updateTilesPosition(false);
-    this.updateTracker();
   },
 
   renderBoardDom() {
@@ -387,7 +399,6 @@ export const GameSliding = {
     this.moves++;
     this.updateMovesDisplay();
     this.updateTilesPosition(true);
-    this.updateTracker();
 
     this.checkWin();
   },
@@ -395,37 +406,6 @@ export const GameSliding = {
   updateMovesDisplay() {
     const el = document.getElementById('sliding-move-count');
     if (el) el.textContent = this.moves;
-  },
-
-  updateTracker() {
-    const rows = [
-      { row: 0, eq: this.equations[0], tiles: [0, 1, 2] },
-      { row: 1, eq: this.equations[1], tiles: [3, 4, 5] },
-      { row: 2, eq: this.equations[2], tiles: [6, 7, 8] }
-    ];
-
-    rows.forEach(({ row, eq, tiles }) => {
-      const rowEl = document.getElementById(`tracker-row-${row}`);
-      const eqEl = document.getElementById(`tracker-eq-${row}`);
-      const statusEl = document.getElementById(`tracker-status-${row}`);
-      if (!rowEl || !eqEl || !statusEl) return;
-
-      const isRowCorrect = (
-        this.board[row * 3] === tiles[0] &&
-        this.board[row * 3 + 1] === tiles[1] &&
-        this.board[row * 3 + 2] === tiles[2]
-      );
-
-      if (isRowCorrect) {
-        rowEl.classList.add('row-done');
-        eqEl.textContent = `${eq.solA} × ${eq.solB} = ${eq.target}`;
-        statusEl.textContent = '✓';
-      } else {
-        rowEl.classList.remove('row-done');
-        eqEl.textContent = `${eq.solA} × ${eq.solB} = ${eq.target}`;
-        statusEl.textContent = '⏳';
-      }
-    });
   },
 
   checkWin() {
@@ -460,23 +440,28 @@ export const GameSliding = {
     Confetti.burst(60);
     showToast('🎉 太神了！拼圖完整還原！乘法大師！');
 
-    // 依序高亮慶祝三組算式
+    // 依序高亮慶祝三列算式方塊
     for (let row = 0; row < 3; row++) {
       setTimeout(() => {
-        const rowEl = document.getElementById(`tracker-row-${row}`);
-        if (rowEl) {
-          rowEl.style.transform = 'scale(1.08)';
-          sound.playPop();
-          setTimeout(() => { rowEl.style.transform = ''; }, 300);
+        sound.playPop();
+        for (let c = 0; c < 3; c++) {
+          const tileId = row * 3 + c;
+          const tileEl = document.getElementById(`sliding-tile-${tileId}`);
+          if (tileEl) {
+            tileEl.style.transform = 'scale(1.08)';
+            setTimeout(() => { tileEl.style.transform = ''; }, 260);
+          }
         }
       }, 400 + row * 400);
     }
 
+    // 彈出過關獲勝彈窗
     setTimeout(() => {
       const th = this.themes[this.currentThemeIndex];
+      const eqList = this.equations.map(e => `${e.solA} × ${e.solB} = ${e.target}`).join('　|　');
       showVictoryModal(
         '拼圖大成功！乘法神童！',
-        `太厲害了！你僅用了 ${this.moves} 步，成功拼出了可愛的【${th.name}】插畫，並還原了 3 組完整的九九乘法算式！🏆✨`,
+        `太厲害了！你僅用了 ${this.moves} 步，成功拼出了可愛的【${th.name}】插畫！\n${eqList} 🏆✨`,
         '🖼️',
         () => this.newGame()
       );
