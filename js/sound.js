@@ -130,24 +130,92 @@ class SoundEngine {
     osc.stop(now + 0.15);
   }
 
-  // 怪獸吃飽可愛打飽嗝 (Burp)
-  playBurp() {
+  // 振奮高昂的怪獸餵食答對歡慶音效 (清脆大三和弦勝利琶音 + 閃亮鈴聲泛音 + 歡樂共鳴 + 可愛飽嗝)
+  playMonsterSuccess() {
     if (!state.soundEnabled) return;
     this.init();
     if (!this.ctx) return;
     const now = this.ctx.currentTime;
-    const osc = this.ctx.createOscillator();
-    const gain = this.ctx.createGain();
-    osc.type = 'sawtooth';
-    osc.frequency.setValueAtTime(135, now);
-    osc.frequency.linearRampToValueAtTime(105, now + 0.08);
-    osc.frequency.linearRampToValueAtTime(150, now + 0.18);
-    gain.gain.setValueAtTime(0.35, now);
-    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.22);
-    osc.connect(gain);
-    gain.connect(this.ctx.destination);
-    osc.start(now);
-    osc.stop(now + 0.22);
+
+    // 1. 清脆歡欣的上升勝利琶音 (C5 -> E5 -> G5 -> C6 -> E6 -> G6)
+    const notes = [
+      { f: 523.25, t: 0.00, dur: 0.16, vol: 0.24, type: 'triangle' },
+      { f: 659.25, t: 0.05, dur: 0.16, vol: 0.25, type: 'triangle' },
+      { f: 783.99, t: 0.10, dur: 0.18, vol: 0.27, type: 'triangle' },
+      { f: 1046.50, t: 0.15, dur: 0.28, vol: 0.32, type: 'triangle' },
+      { f: 1318.51, t: 0.20, dur: 0.35, vol: 0.28, type: 'triangle' },
+      { f: 1567.98, t: 0.25, dur: 0.45, vol: 0.26, type: 'sine' }
+    ];
+
+    notes.forEach(note => {
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      const st = now + note.t;
+      osc.type = note.type;
+      osc.frequency.setValueAtTime(note.f, st);
+
+      gain.gain.setValueAtTime(0.0001, st);
+      gain.gain.linearRampToValueAtTime(note.vol, st + 0.015);
+      gain.gain.exponentialRampToValueAtTime(0.0001, st + note.dur);
+
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      osc.start(st);
+      osc.stop(st + note.dur + 0.02);
+
+      // 閃爍高頻鈴音泛音 (呈現星光閃閃質感)
+      if (note.f >= 783.99) {
+        const bellOsc = this.ctx.createOscillator();
+        const bellGain = this.ctx.createGain();
+        bellOsc.type = 'sine';
+        bellOsc.frequency.setValueAtTime(note.f * 2, st);
+        bellGain.gain.setValueAtTime(0.0001, st);
+        bellGain.gain.linearRampToValueAtTime(note.vol * 0.4, st + 0.01);
+        bellGain.gain.exponentialRampToValueAtTime(0.0001, st + note.dur * 0.7);
+        bellOsc.connect(bellGain);
+        bellGain.connect(this.ctx.destination);
+        bellOsc.start(st);
+        bellOsc.stop(st + note.dur * 0.7 + 0.02);
+      }
+    });
+
+    // 2. 飽滿的 C 大調背景和弦共鳴 (0.18s 進入，加強振奮與成就感)
+    const chordFrequencies = [523.25, 659.25, 1046.50];
+    chordFrequencies.forEach(freq => {
+      const cOsc = this.ctx.createOscillator();
+      const cGain = this.ctx.createGain();
+      const cStart = now + 0.18;
+      cOsc.type = 'sine';
+      cOsc.frequency.setValueAtTime(freq, cStart);
+      cGain.gain.setValueAtTime(0.0001, cStart);
+      cGain.gain.linearRampToValueAtTime(0.15, cStart + 0.03);
+      cGain.gain.exponentialRampToValueAtTime(0.0001, cStart + 0.45);
+      cOsc.connect(cGain);
+      cGain.connect(this.ctx.destination);
+      cOsc.start(cStart);
+      cOsc.stop(cStart + 0.48);
+    });
+
+    // 3. 伴隨在和弦中後段的可愛打飽嗝 (Burp) - 幽默逗趣又滿足
+    const burpStart = now + 0.28;
+    const burpOsc = this.ctx.createOscillator();
+    const burpGain = this.ctx.createGain();
+    burpOsc.type = 'sawtooth';
+    burpOsc.frequency.setValueAtTime(145, burpStart);
+    burpOsc.frequency.linearRampToValueAtTime(115, burpStart + 0.08);
+    burpOsc.frequency.linearRampToValueAtTime(180, burpStart + 0.18);
+    burpGain.gain.setValueAtTime(0.0001, burpStart);
+    burpGain.gain.linearRampToValueAtTime(0.28, burpStart + 0.02);
+    burpGain.gain.exponentialRampToValueAtTime(0.0001, burpStart + 0.25);
+    burpOsc.connect(burpGain);
+    burpGain.connect(this.ctx.destination);
+    burpOsc.start(burpStart);
+    burpOsc.stop(burpStart + 0.26);
+  }
+
+  // 怪獸吃飽可愛打飽嗝 (相容舊呼叫，直接導向振奮版)
+  playBurp() {
+    this.playMonsterSuccess();
   }
 
   // 大通關歡慶樂章 (Fanfare)

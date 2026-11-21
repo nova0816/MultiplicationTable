@@ -115,6 +115,16 @@
   position: relative;
   transition: transform 0.3s;
 }
+@keyframes monsterHappyJump {
+  0% { transform: scale(1) translateY(0); }
+  30% { transform: scale(1.16, 0.86) translateY(-22px); }
+  55% { transform: scale(0.92, 1.1) translateY(-6px); }
+  75% { transform: scale(1.06, 0.95) translateY(-2px); }
+  100% { transform: scale(1) translateY(0); }
+}
+.monster-happy-jump {
+  animation: monsterHappyJump 0.65s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
 .monster-mouth-target {
   position: absolute;
   width: 110px;

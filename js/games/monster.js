@@ -155,12 +155,22 @@ export const GameMonster = {
   },
 
   onEatSuccess(el) {
-    sound.playBurp();
-    showToast('嗝～ 好吃！答對了！❤️');
-    Confetti.burst(35);
+    sound.playMonsterSuccess();
+    showToast('🎉 答對了！太厲害了！怪獸好開心！💖');
+    Confetti.burst(45);
 
     const bubble = document.getElementById('monster-bubble');
-    bubble.textContent = '嗝～ 肚子好滿足！😋';
+    if (bubble) {
+      bubble.textContent = '🎉 耶～答對了！好好吃喔！😋✨';
+    }
+
+    // 怪獸開心雀躍動畫
+    const monsterBox = document.getElementById('monster-body-box');
+    if (monsterBox) {
+      monsterBox.classList.remove('monster-happy-jump');
+      void monsterBox.offsetWidth;
+      monsterBox.classList.add('monster-happy-jump');
+    }
 
     el.style.transform = 'scale(0)';
     setTimeout(() => el.remove(), 200);
