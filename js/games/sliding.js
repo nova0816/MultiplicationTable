@@ -1,6 +1,6 @@
 /* ==========================================================================
    js/games/sliding.js - 遊戲 7: 九九乘法滑動拼圖 (Multiplication Sliding Puzzle)
-   3x3 經典 8-Puzzle 拼圖 + 九九乘法橫向算式還原 + Peppa Pig 可愛插畫背景
+   3x3 經典 8-Puzzle 拼圖 + 九九乘法橫向算式還原 + 過關解鎖下一張可愛插畫
    ========================================================================== */
 
 import { state } from '../state.js';
@@ -18,6 +18,8 @@ export const GameSliding = {
     { id: 'treasure', name: '🏴‍☠️ 藏寶箱',   file: 'assets/puzzle/ep2_treasure.png' },
     { id: 'toy',      name: '🧸 歡樂玩具', file: 'assets/puzzle/ep11_toy.png' }
   ],
+  currentLevel: 1,
+  totalLevels: 8,
   currentThemeIndex: 0,
   equations: [], // 3 組算式: [E0, E1, E2]
   tileDefs: [],  // 9 塊拼圖定義: [0..7 可移動, 8 勝利補齊塊]
@@ -29,9 +31,35 @@ export const GameSliding = {
   hintTimer: null,
 
   start() {
+    this.currentLevel = 1;
     this.setupControls();
-    this.renderThemeBar();
-    this.newGame();
+    this.loadLevel(this.currentLevel);
+  },
+
+  loadLevel(lvl) {
+    this.currentLevel = lvl;
+    this.currentThemeIndex = (lvl - 1) % this.themes.length;
+    this.isWon = false;
+    this.moves = 0;
+    this.updateMovesDisplay();
+
+    const badge = document.getElementById('sliding-level-badge');
+    const curTheme = this.themes[this.currentThemeIndex];
+    if (badge) {
+      badge.textContent = `第 ${this.currentLevel} / ${this.totalLevels} 關 ${curTheme.name}`;
+    }
+
+    const boardEl = document.getElementById('sliding-board');
+    if (boardEl) boardEl.classList.remove('board-won');
+
+    this.generateEquations();
+    this.setupTileDefs();
+
+    const shuffled = this.shuffleBoard(60);
+    this.board = shuffled.board;
+    this.emptyPos = shuffled.emptyPos;
+
+    this.renderBoardDom();
   },
 
   setupControls() {
@@ -118,38 +146,6 @@ export const GameSliding = {
           this.moveTileAtPos(target);
         }
       }, { passive: true });
-    }
-  },
-
-  renderThemeBar() {
-    const bar = document.getElementById('sliding-theme-bar');
-    if (!bar) return;
-    bar.innerHTML = '';
-
-    this.themes.forEach((th, idx) => {
-      const pill = document.createElement('div');
-      pill.className = `theme-pill ${idx === this.currentThemeIndex ? 'active' : ''}`;
-      pill.textContent = th.name;
-      pill.onclick = () => {
-        sound.playPop();
-        this.setTheme(idx);
-      };
-      bar.appendChild(pill);
-    });
-  },
-
-  setTheme(idx) {
-    this.currentThemeIndex = idx;
-    document.querySelectorAll('.theme-pill').forEach((el, i) => {
-      el.classList.toggle('active', i === idx);
-    });
-    const currentTheme = this.themes[this.currentThemeIndex];
-
-    for (let tileId = 0; tileId < 9; tileId++) {
-      const tileEl = document.getElementById(`sliding-tile-${tileId}`);
-      if (tileEl) {
-        tileEl.style.backgroundImage = `url('${currentTheme.file}')`;
-      }
     }
   },
 
@@ -274,7 +270,6 @@ export const GameSliding = {
     this.emptyPos = shuffled.emptyPos;
 
     this.renderBoardDom();
-    this.setTheme(this.currentThemeIndex);
   },
 
   shuffleCurrent() {
@@ -438,7 +433,7 @@ export const GameSliding = {
 
     sound.playMonsterSuccess();
     Confetti.burst(60);
-    showToast('🎉 太神了！拼圖完整還原！乘法大師！');
+    showToast(`🎉 第 ${this.currentLevel} 關通關！拼圖完整還原！`);
 
     // 依序高亮慶祝三列算式方塊
     for (let row = 0; row < 3; row++) {
@@ -459,12 +454,23 @@ export const GameSliding = {
     setTimeout(() => {
       const th = this.themes[this.currentThemeIndex];
       const eqList = this.equations.map(e => `${e.solA} × ${e.solB} = ${e.target}`).join('　|　');
-      showVictoryModal(
-        '拼圖大成功！乘法神童！',
-        `太厲害了！你僅用了 ${this.moves} 步，成功拼出了可愛的【${th.name}】插畫！\n${eqList} 🏆✨`,
-        '🖼️',
-        () => this.newGame()
-      );
+
+      if (this.currentLevel >= this.totalLevels) {
+        showVictoryModal(
+          '🏆 大破關！滑動拼圖大宗師！',
+          `恭喜你通關了全部 ${this.totalLevels} 款插畫關卡！\n所有的九九乘法算式都被你征服了，太優秀了！🎉✨`,
+          '👑',
+          () => this.loadLevel(1)
+        );
+      } else {
+        const nextTheme = this.themes[this.currentThemeIndex + 1];
+        showVictoryModal(
+          `🎉 第 ${this.currentLevel} 關完成！`,
+          `太棒了！你用了 ${this.moves} 步拼出【${th.name}】！\n下一關解鎖全新插畫：【${nextTheme.name}】！\n${eqList} 🏆✨`,
+          '➡️',
+          () => this.loadLevel(this.currentLevel + 1)
+        );
+      }
     }, 1800);
   },
 
